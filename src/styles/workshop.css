@@ -1,0 +1,16 @@
+
+h1,h2,.toc-title{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:-.005em}
+.toc-title{font-size:var(--text-xl);line-height:1.05}
+main h1:not(.top){font-size:clamp(2.5rem,3.5vw + 1rem,4.5rem);line-height:1;border-top:3px solid var(--color-ink);padding-top:var(--space-md);max-width:var(--w-wide)}
+main h2{border-top:2px solid var(--color-ink);padding-top:var(--space-sm);font-size:var(--text-2xl);max-width:none}
+.toc-part{border-top:2px solid var(--color-ink)}
+.fig{border:3px solid var(--color-ink);background:var(--color-paper-3)}
+.fig h3,.pick strong,.sentence{font-family:var(--font-display);font-weight:700}
+.fig h3{text-transform:uppercase}
+#fig-context{background:var(--color-paper)}
+.stats{border-block:3px solid var(--band-ink)}
+.stat strong{font-family:var(--font-display);font-weight:700;font-size:var(--text-3xl)}
+th{color:var(--color-ink);font-weight:600;border-bottom-width:3px}
+blockquote{border-left:6px solid var(--signal-red)}
+main li::marker{color:var(--signal-red)}
+pre{border:2px solid var(--color-ink);background:var(--color-paper-3)}

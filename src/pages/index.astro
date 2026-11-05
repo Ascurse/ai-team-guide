@@ -1,0 +1,118 @@
+---
+import * as guide from '../content/guide.md';
+import ContextSim from '../components/ContextSim.astro';
+import GuessDemo from '../components/GuessDemo.astro';
+import ModelPicker from '../components/ModelPicker.astro';
+import '../styles/fonts.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/guide.css';
+import '../styles/workshop.css';
+import '../styles/hero.css';
+
+const REPO_URL = 'https://github.com/Ascurse/ai-team-guide';
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const WIDGETS = [
+  { Widget: ContextSim, before: /<h2[^>]*>Проверка<\/h2>/g },
+  { Widget: GuessDemo, before: /<h2[^>]*>Если не получилось<\/h2>/g },
+  { Widget: ModelPicker, before: /<p>Цены API за 1M токенов/g },
+];
+
+const compiled = (await guide.compiledContent()).replaceAll('<table>', '<div class="tw"><table>').replaceAll('</table>', '</table></div>');
+const intro = compiled.match(/^\s*<h1[^>]*>(.*?)<\/h1>\s*<p>(.*?)<\/p>/s);
+if (!intro) throw new Error('Гайд должен начинаться с заголовка и абзаца');
+const [introBlock, title, summary] = intro;
+const body = compiled.slice(introBlock.length);
+
+// Интерактивы встают в текст перед своими якорями
+const cuts = WIDGETS.map(({ Widget, before }) => {
+  const found = [...body.matchAll(before)];
+  if (found.length !== 1) throw new Error(`Якорь ${before} найден ${found.length} раз`);
+  return { Widget, at: found[0].index };
+}).sort((a, b) => a.at - b.at);
+const parts = cuts.map((cut, i) => ({ html: body.slice(i ? cuts[i - 1].at : 0, cut.at), Widget: cut.Widget }));
+const tail = body.slice(cuts.at(-1).at);
+
+const headings = guide.getHeadings().filter((h) => h.depth <= 2);
+const titleSlug = headings[0].slug;
+const groups = [];
+for (const h of headings.slice(1)) {
+  if (h.depth === 1) groups.push({ ...h, subs: [] });
+  else groups.at(-1).subs.push(h);
+}
+const plainTitle = title.replace(/<[^>]+>/g, '');
+const description = summary.replace(/<[^>]+>/g, '');
+---
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Как работать с AI</title>
+<meta name="description" content={description}>
+<meta property="og:title" content={plainTitle}>
+<meta property="og:description" content={description}>
+<link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml">
+</head>
+<body>
+<div class="progress" aria-hidden="true"><i id="progress"></i></div>
+
+<header class="hero">
+  <div>
+    <h1 class="top" id={titleSlug} set:html={title} />
+    <p class="sum" set:html={summary} />
+    <div class="doors">{groups.map((g) => <a href={`#${g.slug}`}>{g.text}</a>)}</div>
+  </div>
+  <p class="scene-fallback" id="scene-fallback">Как устроена сессия с моделью, показывает <a href="#fig-context">симулятор контекста</a> в первой части.</p>
+  <section class="scene" id="scene" aria-label="Стопка контекста" hidden>
+    <h2>Каждый ход модель читает всё заново</h2>
+    <div class="stage" id="stage" role="img" aria-label="Стопка контекста: растёт с каждым ходом, значения показаны ниже">
+      <div class="key" aria-hidden="true">
+        <div><b style="background:var(--color-ink)"></b>Инструкции</div>
+        <div><b style="background:var(--signal-blue)"></b>Инструменты</div>
+        <div><b style="background:var(--signal-yellow)"></b>История из кэша</div>
+        <div><b style="background:var(--signal-red)"></b>По полной цене</div>
+      </div>
+    </div>
+    <div class="cells">
+      <div class="cell"><span>Контекст</span><strong id="h-ctx"></strong></div>
+      <div class="cell"><span>Цена хода</span><strong id="h-cost"></strong></div>
+      <div class="cell"><span>Вся сессия</span><strong id="h-total"></strong></div>
+    </div>
+    <div id="h-msg" aria-live="polite"></div>
+    <label for="h-turn">Ход <strong id="h-n">1</strong> из 50</label>
+    <input id="h-turn" type="range" min="1" max="50" value="1">
+    <div class="row">
+      <button class="btn primary" id="h-next" type="button">Следующий ход</button>
+      <button class="btn" id="h-play" type="button" aria-pressed="false">Автоход</button>
+      <button class="btn" id="h-mcp" type="button">Подключить MCP</button>
+      <button class="btn" id="h-compact" type="button">/compact</button>
+      <button class="btn" id="h-reset" type="button">Сначала</button>
+    </div>
+  </section>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Содержание">
+  <a class="toc-title" href={`#${titleSlug}`} set:html={title} />
+  {groups.map((g) => (
+    <div class="toc-part"><a class="l1" href={`#${g.slug}`}>{g.text}</a><div class="toc-sub">{g.subs.map((s) => <a href={`#${s.slug}`}>{s.text}</a>)}</div></div>
+  ))}
+</nav>
+<main>
+  <div class="mobile-bar">
+    <details class="mobile-toc"><summary>Содержание</summary><div class="toc-list">
+      {groups.map((g) => (
+        <div class="toc-part"><a class="l1" href={`#${g.slug}`}>{g.text}</a><div class="toc-sub">{g.subs.map((s) => <a href={`#${s.slug}`}>{s.text}</a>)}</div></div>
+      ))}
+    </div></details>
+  </div>
+  {parts.map(({ html, Widget }) => (<Fragment set:html={html} /><Widget />))}
+  <Fragment set:html={tail} />
+</main>
+</div>
+
+<footer class="site"><a href={REPO_URL}>Исходники на GitHub</a></footer>
+<script src="../scripts/main.js"></script>
+</body>
+</html>

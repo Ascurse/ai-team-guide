@@ -1,0 +1,25 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn test
+      - run: yarn build
+      - run: yarn offline
+      - run: gh release create "$GITHUB_REF_NAME" dist-offline/ai-team-guide.html --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

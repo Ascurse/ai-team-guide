@@ -1,0 +1,19 @@
+{
+  "name": "ai-team-guide",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "node --test test/*.test.mjs",
+    "offline": "node scripts/offline.mjs"
+  },
+  "dependencies": {
+    "astro": "7.4.5",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

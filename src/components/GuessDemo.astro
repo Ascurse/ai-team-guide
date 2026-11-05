@@ -1,0 +1,15 @@
+<section class="fig" id="fig-guess" aria-label="Как модель угадывает">
+<h3>Почему модель выдумывает уверенно</h3>
+<p class="lead">Модель не достаёт факт из памяти. Она оценивает вероятность следующего слова и выбирает одно из них. Когда факта нет, вероятности размазаны, но ответ звучит так же уверенно.</p>
+<div class="row" role="group" aria-label="Пример">
+<button class="btn" id="g-known" type="button" aria-pressed="true">Факт, который все знают</button>
+<button class="btn" id="g-unknown" type="button" aria-pressed="false">Факт, которого у неё нет</button>
+</div>
+<div class="sentence"><span id="g-text"></span> <em id="g-word">…</em></div>
+<div class="bars" id="g-bars"></div>
+<div class="row"><button class="btn" id="g-go" type="button">Сгенерировать ещё раз</button></div>
+<p id="g-msg" aria-live="polite"></p>
+<h3 class="sub">Как часто модели выдумывают, когда не знают ответа</h3>
+<div class="bars" id="g-rates"></div>
+<p class="note">Вероятности в примере учебные. Доли выдумок — один источник: <a href="https://benchlm.ai/blog/posts/gpt-6-models-compared">BenchLM по Artificial Analysis</a>, тест на знание фактов, не на код.</p>
+</section>

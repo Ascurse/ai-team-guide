@@ -1,0 +1,25 @@
+<section class="fig" id="fig-context" aria-label="Симулятор сессии">
+<h3>Симулятор: что происходит с контекстом и кэшем</h3>
+<p class="lead">Модель ничего не помнит между ходами. На каждом ходу она заново получает всю переписку, поэтому сессия становится тяжелее и дороже. Двигайте ползунок и жмите кнопки.</p>
+<div class="row">
+<label for="s-turn" style="flex:1 1 220px">Ход <strong id="s-n">1</strong> из 50
+<input id="s-turn" type="range" min="1" max="50" value="1"></label>
+<label for="s-model">Модель<br><select id="s-model"></select></label>
+</div>
+<div class="row">
+<button class="btn" id="s-mcp" type="button">Подключить MCP посреди сессии</button>
+<button class="btn" id="s-compact" type="button">Сделать /compact</button>
+<button class="btn" id="s-reset" type="button">Сбросить</button>
+</div>
+<div class="stack" id="s-stack" role="img" aria-label="Заполнение контекста"></div>
+<div class="scale" id="s-scale"></div>
+<div class="legend" id="s-legend"></div>
+<div class="stats">
+<div class="stat"><div>Контекст</div><strong id="s-ctx"></strong></div>
+<div class="stat"><div>Цена этого хода</div><strong id="s-cost"></strong></div>
+<div class="stat"><div>Цена всей сессии</div><strong id="s-total"></strong></div>
+</div>
+<div id="s-msg" aria-live="polite"></div>
+<div class="spark" id="s-spark" aria-hidden="true"></div>
+<p class="note">Столбики — цена каждого хода, красные — ходы без кэша, где всё прочитано по полной цене. Учебная модель: 6K токенов на ход, 1.5K на ответ, кэшированный вход в 10 раз дешевле. Вход длиннее 272K стоит вдвое дороже, поэтому кривая ломается к концу. Цены — из таблицы в разделе «Модели в разработке». Настоящая сессия будет отличаться, важна форма кривой.</p>
+</section>
