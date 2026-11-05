@@ -1,0 +1,25 @@
+---
+import { DELEGATION_TASKS } from '../data/delegation.js';
+---
+<section class="fig" id="fig-delegation" aria-label="Что делегация делает с контекстом">
+<h3>Дерево делегации: где остаётся шум</h3>
+<p class="lead">20 чтений файлов либо лежат в главной сессии, либо остаются у субагента, а к вам приходит вывод. Выберите, сколько субагентов работает.</p>
+<div class="js-only">
+<div class="row" id="d-count">
+<span>Субагентов:</span>
+{[0, 1, 2, 3, 6].map((n) => <button class="btn" type="button" data-count={n} aria-pressed={String(n === 1)}>{n}</button>)}
+</div>
+<div class="tree" id="d-tree" role="img" aria-label="Схема: главная сессия и субагенты"></div>
+<div class="legend"><span><b class="k-read"></b>Чтение файла</span><span><b class="k-result"></b>Вывод субагента</span></div>
+<div class="stats">
+<div class="stat"><div>Чтений в главной сессии</div><strong id="d-main"></strong></div>
+<div class="stat"><div>Чтений у субагентов</div><strong id="d-subs"></strong></div>
+<div class="stat"><div>Выводов наверх</div><strong id="d-results"></strong></div>
+</div>
+<div class="msg" id="d-msg" aria-live="polite"></div>
+<h3 class="sub">Стоит ли делегировать</h3>
+<label for="d-task">Задача<br><select id="d-task">{DELEGATION_TASKS.map((task, i) => <option value={i}>{task.name}</option>)}</select></label>
+<div class="pick" aria-live="polite"><strong id="d-verdict"></strong><div id="d-why"></div></div>
+</div>
+<p class="note">Лимит в два субагента мой, он появился после реального сбоя. Чтения показаны штуками: размер в токенах зависит от файлов.</p>
+</section>

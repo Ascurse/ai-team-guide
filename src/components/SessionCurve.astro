@@ -1,0 +1,34 @@
+---
+import { DATA_NOTE } from '../data/freshness.js';
+import { PRICES, compactCurve, money } from '../lib/sim.js';
+
+const START = { length: 40, at: 30 };
+const MAX_LENGTH = 40;
+const start = compactCurve(START.length, START.at, PRICES['GPT-6.1 Terra']);
+---
+<section class="fig" id="fig-curve" aria-label="Когда окупается компакт">
+<h3>Кривая сессии: когда окупается /compact</h3>
+<p class="lead">Компакт стоит денег сразу, а экономит потом. На границе фазы он окупается, перед концом задачи только теряет деньги.</p>
+<div class="js-only">
+<div class="row">
+<label for="c-length" style="flex:1 1 200px">Длина задачи: <strong id="c-length-n">{START.length}</strong> ходов
+<input id="c-length" type="range" min="10" max={MAX_LENGTH} value={START.length}></label>
+<label for="c-at" style="flex:1 1 200px">/compact на ходу <strong id="c-at-n">{START.at}</strong>
+<input id="c-at" type="range" min="5" max={START.length - 1} value={START.at}></label>
+</div>
+<div class="row">
+<button class="btn" id="c-phase" type="button">На границе фазы</button>
+<button class="btn" id="c-late" type="button">За 2 хода до конца</button>
+</div>
+<svg class="curve" id="c-svg" role="img" aria-label="Накопленная цена сессии с компактом и без"></svg>
+<div class="legend"><span><b class="k-plain"></b>Без компакта</span><span><b class="k-comp"></b>С компактом</span></div>
+</div>
+<div class="stats">
+<div class="stat"><div>Без компакта</div><strong id="c-plain">{money(start.plain.at(-1))}</strong></div>
+<div class="stat"><div>С компактом</div><strong id="c-comp">{money(start.compacted.at(-1))}</strong></div>
+<div class="stat"><div>Разница</div><strong id="c-saved">{money(start.saved)}</strong></div>
+</div>
+<div class="msg" id="c-msg" aria-live="polite">Окупился через {start.steps} ходов: дальше каждый ход дешевле.</div>
+<p class="note">Учебная модель на цене Terra. На ходу компакта модель читает контекст из кэша и пишет выжимку в 15K токенов по цене выхода, потом первый ход идёт без кэша. Длина ограничена 40 ходами: дальше контекст уходит за 272K, вход там вдвое дороже, и компакт окупается быстрее. Деньги тут не единственный довод: качество кода падает после 40–60 шагов или 40K–70K токенов (один источник).</p>
+<p class="data-note">{DATA_NOTE}</p>
+</section>

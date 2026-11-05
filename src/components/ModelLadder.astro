@@ -1,0 +1,42 @@
+---
+import { DATA_NOTE } from '../data/freshness.js';
+import { LADDER, SESSION_TURNS, ladderBars } from '../data/ladder.js';
+import { PRICES } from '../lib/sim.js';
+
+const bars = ladderBars('session');
+const first = LADDER[1];
+const [inPrice, outPrice] = PRICES[first.id];
+---
+<section class="fig" id="fig-ladder" aria-label="Лестница моделей Codex">
+<h3>Лестница моделей: за что платите на каждой ступени</h3>
+<p class="lead">Ступень выше стоит дороже, но выигрывает не везде. Переключайте мерку и нажимайте на модель.</p>
+<div class="row js-only">
+<button class="btn" type="button" data-metric="session" aria-pressed="true">Цена сессии, {SESSION_TURNS} ходов</button>
+<button class="btn" type="button" data-metric="made" aria-pressed="false">Выдумывает</button>
+<button class="btn" type="button" data-metric="index" aria-pressed="false">Индекс интеллекта</button>
+</div>
+<div class="stairs" id="l-stairs">
+{bars.map((bar) => (
+<button class="stair" type="button" data-id={bar.id} aria-pressed={String(bar.id === first.id)}>
+<span class="stair-value">{bar.label}</span>
+<span class="stair-track"><i style={`transform:scaleY(${Math.max(bar.share, 0.02)})`}></i></span>
+<span class="stair-name">{bar.name}</span>
+</button>
+))}
+</div>
+<div class="pick" aria-live="polite">
+<strong id="l-name">{first.name}</strong>
+<div id="l-use">{first.use}</div>
+<div id="l-facts">Скорость: {first.speed}. Цена за 1M: ${inPrice.toFixed(2)} вход, ${outPrice.toFixed(2)} выход.</div>
+</div>
+<h3 class="sub">Вторая ручка: усилие</h3>
+<div class="row js-only" id="l-effort">
+<button class="btn" type="button" data-level="low" aria-pressed="false">low</button>
+<button class="btn" type="button" data-level="medium" aria-pressed="true">medium</button>
+<button class="btn" type="button" data-level="high" aria-pressed="false">high</button>
+<button class="btn" type="button" data-level="max" aria-pressed="false">max</button>
+</div>
+<div class="msg" id="l-effort-msg" aria-live="polite">С low на medium +17 баллов, дальше прирост быстро падает.</div>
+<p class="note">Выдумки: один источник, тест на знание фактов, не на код. Индекс Artificial Analysis есть в гайде только для Sol и Astra. Усилие: один источник, замер на Opus 5.5, у моделей Codex кривая может быть другой. Цена сессии из учебной модели симулятора.</p>
+<p class="data-note">{DATA_NOTE}</p>
+</section>

@@ -8,6 +8,7 @@ const CAM_RADIUS = 12.7;
 const CAM_HEIGHT = 8.2;
 const SWEEP_SECONDS = 0.7;
 const SETTLE_MS = 1500;
+const BASE_MARGIN = 1.6;
 const heightOf = (size) => (size / MAX_SCALE) * TOWER;
 
 function readToken(name) {
@@ -18,9 +19,9 @@ function readToken(name) {
   return new Color().setRGB(r / 255, g / 255, b / 255, SRGBColorSpace);
 }
 
-export function createScene(stage) {
+export function createScene(stage, { spots = [0], names = [], width = WIDTH, margin = BASE_MARGIN } = {}) {
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const colors = { sys: readToken('--color-ink'), tools: readToken('--signal-blue'), hist: readToken('--signal-yellow'), fresh: readToken('--signal-red') };
+  const colors = { sys: readToken('--color-ink'), tools: readToken('--signal-blue'), hist: readToken('--signal-yellow'), fresh: readToken('--signal-red'), out: readToken('--signal-red') };
   const renderer = new WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   stage.prepend(renderer.domElement);
@@ -41,18 +42,28 @@ export function createScene(stage) {
   sun.position.set(3, 9, 6);
   scene.add(sun);
 
-  const base = new Mesh(new BoxGeometry(WIDTH + 1.6, 0.12, WIDTH + 1.6), new MeshBasicMaterial({ color: colors.sys }));
-  base.position.y = -0.08;
-  scene.add(base);
+  // Башни стоят поперёк взгляда стартовой камеры
+  const towers = spots.map((spot) => ({ x: spot * Math.SQRT1_2, z: -spot * Math.SQRT1_2 }));
+  const baseGeometry = new BoxGeometry(width + margin, 0.12, width + margin);
+  const baseMaterial = new MeshBasicMaterial({ color: colors.sys });
+  towers.forEach(({ x, z }) => {
+    const base = new Mesh(baseGeometry, baseMaterial);
+    base.position.set(x, -0.08, z);
+    scene.add(base);
+  });
 
   const unit = new BoxGeometry(1, 1, 1);
   const edges = new EdgesGeometry(unit);
   const edgeMaterial = new LineBasicMaterial({ color: colors.sys });
 
   const levels = [[COMPACT_WARN, '200K', ': пора /compact'], [FRESH_SESSION_WARN, '250K', ': лучше новая сессия']].map(([size, mark, hint]) => {
-    const line = new LineSegments(new EdgesGeometry(new BoxGeometry(WIDTH + 1, 0.001, WIDTH + 1)), edgeMaterial);
-    line.position.y = heightOf(size);
-    scene.add(line);
+    const y = heightOf(size);
+    const frame = new EdgesGeometry(new BoxGeometry(width + margin * 0.625, 0.001, width + margin * 0.625));
+    towers.forEach((tower) => {
+      const line = new LineSegments(frame, edgeMaterial);
+      line.position.set(tower.x, y, tower.z);
+      scene.add(line);
+    });
     const tag = document.createElement('div');
     tag.className = 'tag';
     tag.textContent = mark;
@@ -60,7 +71,15 @@ export function createScene(stage) {
     detail.textContent = hint;
     tag.append(detail);
     stage.append(tag);
-    return { y: line.position.y, tag };
+    return { y, tag };
+  });
+
+  const nameTags = names.map((name) => {
+    const tag = document.createElement('div');
+    tag.className = 'tag tower-tag';
+    tag.textContent = name;
+    stage.append(tag);
+    return tag;
   });
 
   const slabs = new Map();
@@ -77,7 +96,9 @@ export function createScene(stage) {
     if (slab) return slab;
     slab = new Mesh(unit, new MeshLambertMaterial({ color: colors[layer.kind].clone() }));
     slab.add(new LineSegments(edges, edgeMaterial));
-    slab.scale.set(WIDTH, 0.001, WIDTH);
+    const tower = towers[layer.spot ?? 0];
+    slab.position.set(tower.x, 0, tower.z);
+    slab.scale.set(width, 0.001, width);
     slab.userData = { y: 0, height: 0, bottom: 0, kind: layer.kind, gone: false };
     scene.add(slab);
     slabs.set(layer.id, slab);
@@ -85,9 +106,14 @@ export function createScene(stage) {
   }
 
   function placeTags() {
-    const { height } = stage.getBoundingClientRect();
+    const { width: stageWidth, height } = stage.getBoundingClientRect();
     levels.forEach(({ y, tag }) => {
       point.set(0, y, 0).project(camera);
+      tag.style.top = `${((1 - point.y) / 2) * height}px`;
+    });
+    nameTags.forEach((tag, i) => {
+      point.set(towers[i].x, 0, towers[i].z).project(camera);
+      tag.style.left = `${((1 + point.x) / 2) * stageWidth}px`;
       tag.style.top = `${((1 - point.y) / 2) * height}px`;
     });
   }
@@ -155,18 +181,21 @@ export function createScene(stage) {
 
   return {
     show(layers, freshIds) {
-      let y = 0;
+      const heights = towers.map(() => 0);
       const keep = new Set();
       layers.forEach((layer) => {
         const slab = slabFor(layer);
         const height = heightOf(layer.size);
+        const spot = layer.spot ?? 0;
+        const y = heights[spot];
         Object.assign(slab.userData, { y: y + height / 2, height, bottom: y, gone: false });
-        y += height;
+        heights[spot] = y + height;
         keep.add(layer.id);
       });
       for (const [id, slab] of slabs) {
         if (!keep.has(id)) Object.assign(slab.userData, { height: 0, gone: true });
       }
+      const y = Math.max(...heights);
       fresh = freshIds;
       top = y;
       sweep = 0;

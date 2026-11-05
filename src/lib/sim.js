@@ -15,15 +15,16 @@ export const FRESH_SESSION_WARN = 250000;
 export const fmtK = (n) => Math.round(n / 1000) + 'K';
 export const money = (v) => (v < 0.1 ? '$' + v.toFixed(3) : '$' + v.toFixed(2));
 
-export function simulate(turns, events, price) {
-  let tools = START.tools, hist = 0, prev = 0, total = 0;
+export function simulate(turns, events, price, shape = {}) {
+  const perTurn = shape.perTurn ?? PER_TURN;
+  let tools = shape.tools ?? START.tools, hist = 0, prev = 0, total = 0;
   const out = [];
   for (let t = 1; t <= turns; t++) {
     const ev = events[t];
     let miss = t === 1;
     if (ev === 'mcp') { tools += MCP; miss = true; }
     if (ev === 'compact') { hist = Math.min(hist, COMPACT_TO); miss = true; }
-    hist += PER_TURN;
+    hist += perTurn;
     const ctx = START.sys + tools + hist;
     const cached = miss ? 0 : Math.min(prev, ctx);
     const fresh = ctx - cached;
@@ -51,6 +52,36 @@ export function layersAt(n, events) {
     hist.push({ id: 'turn' + t, size: PER_TURN, kind: 'hist', born: t });
   }
   return fixed.concat(hist);
+}
+
+// Выжимку пишет сама модель: читает контекст из кэша и платит за ответ по цене выхода
+export function compactCurve(turns, at, price) {
+  const plain = simulate(turns, {}, price).map((step) => step.total);
+  const run = simulate(turns, { [at]: 'compact' }, price);
+  const summary = (run[at - 2].ctx * price[0] * CACHED + COMPACT_TO * price[1]) / 1e6;
+  const compacted = run.map((step, i) => step.total + (i >= at - 1 ? summary : 0));
+  const firstAhead = compacted.findIndex((total, i) => i >= at - 1 && total < plain[i]);
+  const breakEven = firstAhead < 0 ? null : firstAhead + 1;
+  return { plain, compacted, breakEven, steps: breakEven && breakEven - at, saved: plain.at(-1) - compacted.at(-1) };
+}
+
+export const OUTPUT_SHARE = 0.84;
+// masked: скрытие старых выводов вдвое дешевле; sandbox: −87% самоотчёта context-mode
+export const OUTPUT_KEEP = { all: 1, masked: 0.5, sandbox: 0.13 };
+
+export function spendAt(turn, price, { outputsKeep = OUTPUT_KEEP.all, toolsShare = 1 } = {}) {
+  const outputs = Math.round(PER_TURN * OUTPUT_SHARE);
+  const keptOutputs = Math.round(outputs * outputsKeep);
+  const talk = PER_TURN - outputs;
+  const tools = Math.round(START.tools * toolsShare);
+  const { ctx, total } = simulate(turn, {}, price, { tools, perTurn: talk + keptOutputs })[turn - 1];
+  const layers = [
+    { id: 'sys', size: START.sys, kind: 'sys' },
+    { id: 'tools', size: tools, kind: 'tools' },
+    { id: 'out', size: keptOutputs * turn, kind: 'out' },
+    { id: 'talk', size: talk * turn, kind: 'hist' },
+  ];
+  return { layers, ctx, total };
 }
 
 export function message(cur, n) {

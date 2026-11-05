@@ -1,8 +1,12 @@
 ---
 import * as guide from '../content/guide.md';
 import ContextSim from '../components/ContextSim.astro';
+import DelegationTree from '../components/DelegationTree.astro';
 import GuessDemo from '../components/GuessDemo.astro';
+import ModelLadder from '../components/ModelLadder.astro';
 import ModelPicker from '../components/ModelPicker.astro';
+import SessionCurve from '../components/SessionCurve.astro';
+import SpendMap from '../components/SpendMap.astro';
 import { DATA_NOTE } from '../data/freshness.js';
 import { addDataNotes } from '../lib/data-notes.mjs';
 import '../styles/fonts.css';
@@ -11,13 +15,18 @@ import '../styles/base.css';
 import '../styles/guide.css';
 import '../styles/workshop.css';
 import '../styles/hero.css';
+import '../styles/explainers.css';
 
 const REPO_URL = 'https://github.com/Ascurse/ai-team-guide';
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const WIDGETS = [
   { Widget: ContextSim, before: /<h2[^>]*>Проверка<\/h2>/g },
   { Widget: GuessDemo, before: /<h2[^>]*>Если не получилось<\/h2>/g },
+  { Widget: ModelLadder, before: /<p>Что выбирать в разработке/g },
   { Widget: ModelPicker, before: /<p>Цены API за 1M токенов/g },
+  { Widget: DelegationTree, before: /<h3[^>]*>Как это устроено в Codex<\/h3>/g },
+  { Widget: SpendMap, before: /<p>Что режет расход/g },
+  { Widget: SessionCurve, before: /<p>Что не сработало или вредит/g },
 ];
 
 // Вики-ссылки vault снимаются здесь: guide.md побайтно совпадает с источником

@@ -1,0 +1,44 @@
+---
+import { DATA_NOTE } from '../data/freshness.js';
+import { MAX_SCALE, PRICES, fmtK, money, spendAt } from '../lib/sim.js';
+
+const START_TURN = 30;
+const base = spendAt(START_TURN, PRICES['GPT-6.1 Terra']);
+const flat = (layers) => layers.map((l) => ({ kind: l.kind, width: `${(l.size / MAX_SCALE) * 100}%` }));
+---
+<section class="fig" id="fig-spend" aria-label="Карта расхода токенов">
+<h3>Карта расхода: на что уходят токены</h3>
+<p class="lead">Слева сессия как есть, справа с выбранными приёмами. Включите приём и посмотрите, какой слой усыхает. Сцену можно вращать.</p>
+<div class="js-only">
+<div class="row">
+<label for="m-turn" style="flex:1 1 220px">Ход <strong id="m-n">{START_TURN}</strong> из 50
+<input id="m-turn" type="range" min="1" max="50" value={START_TURN}></label>
+</div>
+<div class="row">
+<button class="btn" id="m-tools" type="button" aria-pressed="false">Убрать лишние схемы</button>
+<button class="btn" id="m-masked" type="button" aria-pressed="false">Скрывать старые выводы</button>
+<button class="btn" id="m-sandbox" type="button" aria-pressed="false">Обрабатывать вне контекста</button>
+</div>
+</div>
+<div class="stage" id="m-stage" role="img" aria-label="Две башни контекста: как есть и с приёмами" hidden>
+<div class="key" aria-hidden="true">
+<div><b class="k-sys"></b>Инструкции</div>
+<div><b class="k-tools"></b>Схемы инструментов</div>
+<div><b class="k-out"></b>Выводы инструментов</div>
+<div><b class="k-hist"></b>Диалог</div>
+</div>
+</div>
+<div class="flat" id="m-flat">
+{[['Как есть', 'm-flat-base'], ['С приёмами', 'm-flat-now']].map(([name, id]) => (
+<div class="flat-row"><span>{name}</span><div class="stack" id={id}>{flat(base.layers).map((l) => <i class={`k-${l.kind}`} style={`width:${l.width}`}></i>)}</div></div>
+))}
+</div>
+<div class="stats">
+<div class="stat"><div>Контекст</div><strong id="m-ctx">{fmtK(base.ctx)}</strong></div>
+<div class="stat"><div>Вся сессия</div><strong id="m-total">{money(base.total)}</strong></div>
+<div class="stat"><div>Экономия</div><strong id="m-saved">0%</strong></div>
+</div>
+<div class="msg" id="m-msg" aria-live="polite">Выводы инструментов занимают большую часть истории, поэтому экономить надо на них.</div>
+<p class="note">Учебная модель на цене Terra, источники разные и складывать их точно нельзя, важна форма. ~84% токенов сессии агента на выводы инструментов (один источник). −87% на обработке вне контекста (самоотчёт context-mode). Скрытие старых выводов вдвое дешевле (один источник). Четверть схем — допущение для примера: у каждого своё лишнее.</p>
+<p class="data-note">{DATA_NOTE}</p>
+</section>
