@@ -8,6 +8,7 @@ import { DELEGATION_TASKS } from '../data/delegation.js';
 <div class="row" id="d-count">
 <span>Субагентов:</span>
 {[0, 1, 2, 3, 6].map((n) => <button class="btn" type="button" data-count={n} aria-pressed={String(n === 1)}>{n}</button>)}
+<button class="btn" type="button" id="d-replay">Повторить</button>
 </div>
 <div class="tree" id="d-tree" role="img" aria-label="Схема: главная сессия и субагенты"></div>
 <div class="legend"><span><b class="k-read"></b>Чтение файла</span><span><b class="k-result"></b>Вывод субагента</span></div>

@@ -1,6 +1,7 @@
 import { DELEGATION_TASKS, FILE_READS, MAX_PARALLEL, splitReads } from '../data/delegation.js';
 import { LADDER, effortGainTo, ladderBars } from '../data/ladder.js';
 import { PRICES, compactCurve, money } from '../lib/sim.js';
+import { flowDelegation, isCalm, onFirstView } from './motion.js';
 
 const $ = (id) => document.getElementById(id);
 const MIN_STAIR = 0.02;
@@ -90,10 +91,19 @@ export function initDelegation() {
     $('d-why').textContent = task.why;
   }
 
-  counts.forEach((b) => { b.onclick = () => render(b); });
+  let hasPlayed = false;
+  const play = () => {
+    hasPlayed = true;
+    flowDelegation($('d-tree'), { main: $('d-main'), subs: $('d-subs'), results: $('d-results') });
+  };
+
+  counts.forEach((b) => { b.onclick = () => { render(b); play(); }; });
+  $('d-replay').hidden = isCalm();
+  $('d-replay').onclick = () => { render(counts.find((b) => b.getAttribute('aria-pressed') === 'true')); play(); };
   $('d-task').onchange = renderTask;
   render(counts.find((b) => b.getAttribute('aria-pressed') === 'true'));
   renderTask();
+  onFirstView($('d-tree'), () => { if (!hasPlayed) play(); });
 }
 
 function drawCurve(svg, length, at, { plain, compacted, breakEven }) {

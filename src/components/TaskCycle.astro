@@ -1,0 +1,26 @@
+---
+import { CYCLE_FRAMES, CYCLE_NODES, VERDICT_NO, VERDICT_YES } from '../data/cycle.js';
+
+const nameOf = (id) => CYCLE_NODES.find((node) => node.id === id).name;
+const VERDICT_LABEL = { [VERDICT_NO]: ': нет', [VERDICT_YES]: ': да' };
+---
+<section class="fig" id="fig-cycle" aria-label="Цикл задачи">
+<h3>Цикл задачи: где он идёт назад</h3>
+<p class="lead">Работа идёт по прямой, только пока проверка не скажет «нет». Тогда она возвращается через отладку к исполнению.</p>
+<div class="cycle-run" id="cy-run" hidden aria-hidden="true" style={`--frames:${CYCLE_FRAMES.length}`}>
+<div class="cycle-pin">
+<div class="cycle-map" id="cy-map">
+<svg id="cy-lines"></svg>
+{CYCLE_NODES.map((node) => <div class="cycle-node" data-node={node.id}>{node.name}</div>)}
+<i class="cycle-dot" id="cy-dot"></i>
+</div>
+<div class="cycle-text">
+<div class="cycle-count" id="cy-count"></div>
+<p id="cy-text"></p>
+</div>
+</div>
+</div>
+<ol class="cycle-steps" id="cy-steps">
+{CYCLE_FRAMES.map((frame) => <li><strong>{nameOf(frame.node)}{VERDICT_LABEL[frame.verdict]}.</strong> {frame.text}</li>)}
+</ol>
+</section>
