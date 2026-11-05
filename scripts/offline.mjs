@@ -31,6 +31,9 @@ const script = bundled.outputFiles[0].text.replaceAll('</script', '<\\/script');
 let html = readFileSync(join(DIST, 'index.html'), 'utf8');
 html = html.replace(/<link rel="stylesheet" href="([^"]+)"[^>]*>/g, (_, url) => `<style>${inlineAssets(readFileSync(distPath(url), 'utf8'))}</style>`);
 html = html.replace(/<style>([\s\S]*?)<\/style>/g, (_, css) => `<style>${inlineAssets(css)}</style>`);
+// Минификатор срезает комментарии, а линтер читает решения из шапки CSS
+const lintHeader = readFileSync(join(ROOT, 'src/styles/base.css'), 'utf8').match(/^(?:\/\*.*\*\/\n)+/)[0];
+html = html.replace('<style>', () => `<style>${lintHeader}`);
 html = html.replace(/<script type="module"[^>]*>[\s\S]*?<\/script>/g, '');
 html = html.replace(/<link rel="modulepreload"[^>]*>/g, '');
 html = html.replace(/<link rel="icon"[^>]*>/, '');

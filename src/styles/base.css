@@ -1,3 +1,10 @@
+/* Hallmark · shape: long document · genre: editorial · theme: custom · job: read */
+/* Hallmark · dismissed 58 · guide.md это длинный гайд на 949 слов, лимит в 450 к long read не применяем */
+/* Hallmark · dismissed 3 · blockquote и разделители ячеек .cell, а не полоса сбоку у карточки */
+/* Hallmark · dismissed 49 · у .btn уже стоит white-space: nowrap */
+/* Hallmark · dismissed F4 · aria-pressed это состояние переключателя, а не вторая главная кнопка */
+/* Hallmark · dismissed F6 · .stat div это мелкая подпись, цифры в .stat strong уже с tabular-nums */
+/* Hallmark · dismissed F15 · 900px это --w-wide для блоков внутри колонки, контейнер страницы один: 1440px */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { overflow-x: clip; }
 html { scrollbar-color: var(--color-muted) var(--color-paper); scroll-padding-top: var(--space-3xl); }
