@@ -2,8 +2,8 @@ import { PRICES, money, simulate } from '../lib/sim.js';
 
 // Всё здесь повторяет гайд: test/ladder.test.mjs сверяет числа с его текстом
 export const LADDER = [
-  { id: 'GPT-6 Luna', name: 'Luna', use: 'Однотипный объём: извлечение, классификация, резюме по шаблону, точечный код', speed: 'высокая', made: 79.3, index: null },
-  { id: 'GPT-6.1 Terra', name: 'Terra', use: 'Понятный текст, чтение графиков и скриншотов, работа в приложениях', speed: 'высокая', made: 34.5, index: null },
+  { id: 'GPT-6 Luna', name: 'Luna', use: 'Однотипный объём: извлечение, классификация, резюме по шаблону, точечный код', speed: 'высокая', made: 79.3, index: 27.8 },
+  { id: 'GPT-6.1 Terra', name: 'Terra', use: 'Понятный текст, чтение графиков и скриншотов, работа в приложениях', speed: 'высокая', made: 34.5, index: 51 },
   { id: 'GPT-6.1 Sol', name: 'Sol', use: 'Сложная долгая работа с кодом, приложениями и документами, почти уровень Astra', speed: 'средняя', made: 51.9, index: 54.5 },
   { id: 'GPT-6 Astra', name: 'Astra', use: 'Самая трудная работа от начала до конца, где нужны рассуждение и суждение', speed: 'самая низкая', made: 49.8, index: 56.9 },
 ];
@@ -29,8 +29,8 @@ export function ladderBars(metric) {
   return LADDER.map((model, i) => ({
     id: model.id,
     name: model.name,
-    label: values[i] === null ? 'нет данных' : LABELS[metric](values[i]),
-    share: values[i] === null ? 0 : values[i] / top,
+    label: LABELS[metric](values[i]),
+    share: values[i] / top,
   }));
 }
 

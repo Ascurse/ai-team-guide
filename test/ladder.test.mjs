@@ -13,16 +13,18 @@ test('лестница покрывает все модели таблицы ц�
 test('числа лестницы есть в тексте гайда', () => {
   for (const m of LADDER) {
     assert.ok(guide.includes(`${m.name === 'Sol' ? 'GPT-6.1 Sol' : m.name} — ${m.made}%`), m.name);
-    if (m.index) assert.ok(guide.includes(String(m.index)), m.name);
+    assert.ok(guide.includes(String(m.index)), m.name);
   }
+  assert.ok(guide.includes('Terra — 51.0, Luna — 27.8'));
   assert.ok(guide.includes('low→medium +17 баллов, medium→high +6, high→max +4'));
 });
 
-test('высота ступени считается от максимума, пропуски не притворяются нулём цены', () => {
+test('высота ступени считается от максимума, индекс есть у всех моделей', () => {
   const made = ladderBars('made');
   assert.equal(made.find((b) => b.name === 'Luna').share, 1);
   const index = ladderBars('index');
-  assert.equal(index.find((b) => b.name === 'Terra').label, 'нет данных');
+  assert.equal(index.find((b) => b.name === 'Terra').label, '51');
+  assert.equal(index.find((b) => b.name === 'Luna').label, '27.8');
   assert.equal(index.find((b) => b.name === 'Astra').share, 1);
   assert.ok(ladderBars('session')[0].label.startsWith('$'));
 });
