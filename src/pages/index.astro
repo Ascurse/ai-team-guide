@@ -18,7 +18,8 @@ const WIDGETS = [
   { Widget: ModelPicker, before: /<p>Цены API за 1M токенов/g },
 ];
 
-const compiled = (await guide.compiledContent()).replaceAll('<table>', '<div class="tw"><table>').replaceAll('</table>', '</table></div>');
+// Вики-ссылки vault снимаются здесь: guide.md побайтно совпадает с источником
+const compiled = (await guide.compiledContent()).replace(/\[\[([^\]]+)\]\]/g, '$1').replaceAll('<table>', '<div class="tw"><table>').replaceAll('</table>', '</table></div>');
 const intro = compiled.match(/^\s*<h1[^>]*>(.*?)<\/h1>\s*<p>(.*?)<\/p>/s);
 if (!intro) throw new Error('Гайд должен начинаться с заголовка и абзаца');
 const [introBlock, title, summary] = intro;
