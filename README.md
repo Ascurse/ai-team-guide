@@ -24,3 +24,5 @@ yarn dev
 ## Лицензии
 
 Шрифты Jost, Golos Text и IBM Plex Mono распространяются по SIL Open Font License.
+
+После сверки цен и бенчмарков обновите дату в `src/data/freshness.js`: примечания на странице берут её оттуда.

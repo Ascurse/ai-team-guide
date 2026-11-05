@@ -14,3 +14,5 @@ th{color:var(--color-ink);font-weight:600;border-bottom-width:3px}
 blockquote{border-left:6px solid var(--signal-red)}
 main li::marker{color:var(--signal-red)}
 pre{border:2px solid var(--color-ink);background:var(--color-paper-3)}
+.data-note{width:fit-content;max-width:100%;margin:var(--space-sm) 0 var(--space-lg);padding:var(--space-3xs) var(--space-xs);background:var(--signal-yellow);color:var(--band-on-accent);font-size:var(--text-sm);font-weight:600;line-height:1.35}
+.scene .data-note{margin:var(--space-2xs) 0}

@@ -33,6 +33,7 @@ function contrast(foreground, background) {
 const TEXT_PAIRS = [
   ['--color-accent-ink', '--color-accent'],
   ['--band-on-accent', '--band-accent'],
+  ['--band-on-accent', '--signal-yellow'],
   ['--on-signal', '--signal-red'],
   ['--color-link', '--color-paper'],
   ['--color-muted', '--color-paper'],

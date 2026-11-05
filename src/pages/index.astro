@@ -3,6 +3,8 @@ import * as guide from '../content/guide.md';
 import ContextSim from '../components/ContextSim.astro';
 import GuessDemo from '../components/GuessDemo.astro';
 import ModelPicker from '../components/ModelPicker.astro';
+import { DATA_NOTE } from '../data/freshness.js';
+import { addDataNotes } from '../lib/data-notes.mjs';
 import '../styles/fonts.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
@@ -19,7 +21,7 @@ const WIDGETS = [
 ];
 
 // Вики-ссылки vault снимаются здесь: guide.md побайтно совпадает с источником
-const compiled = (await guide.compiledContent()).replace(/\[\[([^\]]+)\]\]/g, '$1').replaceAll('<table>', '<div class="tw"><table>').replaceAll('</table>', '</table></div>');
+const compiled = addDataNotes((await guide.compiledContent()).replace(/\[\[([^\]]+)\]\]/g, '$1'), DATA_NOTE).replaceAll('<table>', '<div class="tw"><table>').replaceAll('</table>', '</table></div>');
 const intro = compiled.match(/^\s*<h1[^>]*>(.*?)<\/h1>\s*<p>(.*?)<\/p>/s);
 if (!intro) throw new Error('Гайд должен начинаться с заголовка и абзаца');
 const [introBlock, title, summary] = intro;
@@ -80,6 +82,7 @@ const description = summary.replace(/<[^>]+>/g, '');
       <div class="cell"><span>Цена хода</span><strong id="h-cost"></strong></div>
       <div class="cell"><span>Вся сессия</span><strong id="h-total"></strong></div>
     </div>
+    <p class="data-note">{DATA_NOTE}</p>
     <div id="h-msg" aria-live="polite"></div>
     <label for="h-turn">Ход <strong id="h-n">1</strong> из 50</label>
     <input id="h-turn" type="range" min="1" max="50" value="1">

@@ -1,3 +1,6 @@
+---
+import { DATA_NOTE } from '../data/freshness.js';
+---
 <section class="fig" id="fig-picker" aria-label="Выбор модели">
 <h3>Какую модель брать в Codex</h3>
 <p class="lead">Выберите задачу и длину сессии. Ниже — что брать и сколько примерно стоит одна и та же работа на разных моделях.</p>
@@ -8,4 +11,5 @@
 <div class="pick"><strong id="p-model"></strong><div id="p-why"></div><div id="p-claude"></div></div>
 <div class="bars" id="p-bars"></div>
 <p class="note">Цена считается по API-прайсу и той же учебной модели, что в симуляторе. Effort не учтён: на high токенов больше. По подписке вы упираетесь в лимиты, а не в счёт, но соотношение то же.</p>
+<p class="data-note">{DATA_NOTE}</p>
 </section>
