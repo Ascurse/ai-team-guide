@@ -1,0 +1,37 @@
+---
+import { ALL_TOOLS_FILTER, TOOL_FILTERS, TOOLS } from '../data/tools.js';
+
+const FILTERS = [{ id: ALL_TOOLS_FILTER, label: 'Все' }, ...TOOL_FILTERS];
+const TAG_LABELS = Object.fromEntries(TOOL_FILTERS.map((filter) => [filter.id, filter.label]));
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<section class="fig" id="fig-tools" aria-label="Каталог инструментов">
+<h3>Десять оболочек</h3>
+<p class="lead">Порядок ничего не значит, это не рейтинг. Выберите, где инструмент должен работать.</p>
+<div class="row js-only" role="group" aria-label="Где работает инструмент">
+{FILTERS.map((filter) => <button class="btn" type="button" aria-pressed={String(filter.id === ALL_TOOLS_FILTER)} data-tool-filter={filter.id}>{filter.label}</button>)}
+</div>
+<p class="tools-count js-only" role="status" data-tools-count></p>
+<ul class="tools">
+{TOOLS.map((tool) => (
+<li class="tool" data-tool-tags={tool.tags.join(' ')}>
+  <div class="tool-head">
+    <span class:list={['tool-logo', { 'tool-logo-full': tool.fullLogo }]}><img src={`${base}/logos/${tool.logo}`} alt="" width="40" height="40" loading="lazy" /></span>
+    <div>
+      <h4 class="tool-name">{tool.name}</h4>
+      <p class="tool-vendor">{tool.vendor}</p>
+    </div>
+  </div>
+  <p class="tool-summary">{tool.summary}</p>
+  <ul class="tool-tags" aria-label="Где работает">{tool.tags.map((tag) => <li>{TAG_LABELS[tag]}</li>)}</ul>
+  <p class="tool-label">Сильные стороны</p>
+  <ul class="tool-list tool-pros">{tool.pros.map((item) => <li>{item}</li>)}</ul>
+  <p class="tool-label">Оговорки</p>
+  <ul class="tool-list tool-cons">{tool.cons.map((item) => <li>{item}</li>)}</ul>
+  <p class="tool-when"><strong>Когда брать.</strong> {tool.when}</p>
+  <p class="tool-links"><a href={tool.url} target="_blank" rel="noopener noreferrer">Сайт</a><a href={tool.docs} target="_blank" rel="noopener noreferrer">{tool.docsLabel ?? 'Документация'}</a></p>
+</li>
+))}
+</ul>
+<p class="note">Сведения собраны 7 ноября 2026 из документации, журналов выпусков и репозиториев самих продуктов. На одинаковых задачах я их не сравнивал, поэтому «когда брать» это мнение, а не результат теста. «Не подтверждено» значит, что этого нет в изученных материалах, а не что функции нет. Логотипы принадлежат их владельцам.</p>
+</section>
