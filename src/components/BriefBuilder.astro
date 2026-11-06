@@ -1,0 +1,25 @@
+---
+import { BRIEF_BASE, BRIEF_PARTS, BRIEF_RESULTS, briefFile } from '../data/brief.js';
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+<section class="fig" id="fig-brief" aria-label="Как постановка меняет результат" data-base={base}>
+<h3>Соберите постановку сами</h3>
+<p class="lead">Задача одна, добавок три. Включайте их в любом сочетании и смотрите, что меняется и что модель додумывает сама.</p>
+<div class="row" role="group" aria-label="Что добавить к задаче">
+{BRIEF_PARTS.map((part) => <button class="btn" type="button" aria-pressed="false" data-part={part.id}>{part.label}</button>)}
+</div>
+<div class="brief">
+  <div class="brief-text">
+    <p class="brief-label">Что ушло модели</p>
+    <p class="brief-prompt"><span>{BRIEF_BASE}</span>{BRIEF_PARTS.map((part) => <span hidden data-text={part.id}> <mark>{part.text}</mark></span>)}</p>
+    <figure class="brief-sample" id="brief-sample" hidden>
+      <img src={`${base}brief/sample.webp`} alt="Образец: плоская геометрическая настольная лампа в синем, жёлтом, красном и чёрном." width="300" height="202" loading="lazy">
+      <figcaption>Приложенный образец</figcaption>
+    </figure>
+  </div>
+  <img class="brief-result" id="brief-result" src={`${base}${briefFile(0)}`} alt={BRIEF_RESULTS[0].alt} width="760" height="511" loading="lazy">
+</div>
+<p class="msg" id="brief-msg" aria-live="polite">{BRIEF_RESULTS[0].note}</p>
+<p class="note">Картинки сгенерированы заранее: Higgsfield, модель gpt_image_2_6, 06.11.2026. Каждая получена с одного запуска, без отбора, образец тоже. Новый запуск даст другую картинку.</p>
+</section>

@@ -74,3 +74,15 @@ html:not(.js) .js-only{display:none}
 @media print{.cycle-run{display:none}}
 .tree{position:relative}
 .fly{position:absolute;display:block;width:12px;height:12px;z-index:var(--z-base)}
+
+.brief{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--space-lg);align-items:start;margin:var(--space-md) 0}
+.brief-text{min-width:0}
+.brief-label{font-size:var(--text-xs);color:var(--color-muted);margin:0 0 var(--space-2xs)}
+.brief-prompt{font-size:var(--text-sm);line-height:1.5;color:var(--color-ink);margin:0;overflow-wrap:break-word}
+.brief-prompt mark{background:none;color:var(--color-accent-2);font-weight:500}
+.brief-sample{display:grid;grid-template-columns:96px minmax(0,1fr);gap:var(--space-sm);align-items:center;margin:var(--space-sm) 0 0}
+.brief-sample[hidden]{display:none}
+.brief-sample img{display:block;width:100%;height:auto}
+.brief-sample figcaption{font-size:var(--text-xs);color:var(--color-muted)}
+.brief-result{display:block;width:100%;height:auto;aspect-ratio:760/511;background:var(--color-paper-2)}
+@media (max-width:760px){.brief{grid-template-columns:minmax(0,1fr)}}
