@@ -4,7 +4,7 @@ import { CYCLE_EDGES, CYCLE_FRAMES, VERDICT_NO, VERDICT_YES } from '../data/cycl
 const $ = (id) => document.getElementById(id);
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DOT_SIZE = 14;
-const SPRING = { type: 'spring', stiffness: 260, damping: 26 };
+const SETTLE = { duration: 0.3, ease: [0.16, 1, 0.3, 1] };
 const NODE_ENTER = 0.06;
 const CHIP_ENTER = 0.02;
 const READS_START = 0.3;
@@ -64,7 +64,7 @@ export function initCycle() {
     $('cy-count').textContent = `Шаг ${index + 1} из ${CYCLE_FRAMES.length}`;
     $('cy-text').textContent = frame.text;
     animate($('cy-text'), { opacity: [0, 1], y: [6, 0] }, { duration: 0.2 });
-    animate(dot, dotTarget(frame.node), isFirstShow ? { duration: 0 } : SPRING);
+    animate(dot, dotTarget(frame.node), isFirstShow ? { duration: 0 } : SETTLE);
   }
 
   new ResizeObserver(() => {
@@ -106,7 +106,7 @@ function flyToMain(tree, sub, chip, delay) {
     if (!fly.isConnected) return;
     fly.remove();
     chip.style.opacity = 1;
-    running.push(animate(chip, { scale: [0, 1] }, SPRING));
+    running.push(animate(chip, { scale: [0, 1] }, SETTLE));
   });
 }
 

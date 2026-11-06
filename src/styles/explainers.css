@@ -16,8 +16,8 @@ html:not(.js) .js-only{display:none}
 .stair-track{position:relative;display:block;height:170px;background:var(--color-paper-2);overflow:hidden}
 .stair-track i{position:absolute;inset:0;background:var(--c1);transform-origin:bottom;transition:transform var(--dur-micro) var(--ease-out)}
 .stair[aria-pressed="true"] .stair-track i{background:var(--color-accent)}
-.stair-name{font-size:var(--text-sm);font-weight:500}
-.stair[aria-pressed="true"] .stair-name{font-weight:700}
+.stair-name{font-size:var(--text-sm)}
+.stair[aria-pressed="true"] .stair-name{font-weight:600}
 .stair:hover .stair-name{color:var(--color-accent-2)}
 
 .tree{display:grid;gap:var(--space-md);margin:var(--space-md) 0}
@@ -40,6 +40,9 @@ html:not(.js) .js-only{display:none}
 
 #fig-spend .stage{margin-top:var(--space-sm)}
 #fig-spend .tag:not(.tower-tag){left:auto;right:var(--space-sm)}
+/* Подпись порога не должна заезжать на башни */
+#fig-spend .stage{container-type:inline-size}
+@container (max-width:720px){#fig-spend .tag:not(.tower-tag) span{display:none}}
 .tower-tag{transform:translate(-50%,6px);white-space:nowrap}
 .flat{display:grid;gap:var(--space-xs);margin:var(--space-md) 0}
 .flat[hidden]{display:none}
@@ -53,7 +56,7 @@ html:not(.js) .js-only{display:none}
 .cycle-map svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .cycle-map line{stroke:var(--color-ink);stroke-width:2}
 .cycle-map line.loop{stroke:var(--signal-red);stroke-dasharray:6 5}
-.cycle-node{position:relative;border:2px solid var(--color-ink);background:var(--color-paper-3);color:var(--color-ink);padding:var(--space-sm) var(--space-2xs);font-size:var(--text-sm);font-weight:500;text-align:center;min-width:0;overflow-wrap:anywhere}
+.cycle-node{position:relative;border:2px solid var(--color-ink);background:var(--color-paper-3);color:var(--color-ink);padding:var(--space-sm) var(--space-2xs);font-size:var(--text-sm);text-align:center;min-width:0;overflow-wrap:anywhere}
 .cycle-node[data-node="debug"]{grid-row:2;grid-column:3/5;justify-self:center;width:calc(50% - var(--space-sm) / 2);border-color:var(--signal-red)}
 .cycle-node.is-on{background:var(--color-ink);color:var(--color-paper-3)}
 .cycle-node.is-no{background:var(--signal-red);border-color:var(--signal-red);color:var(--on-signal)}
@@ -79,7 +82,7 @@ html:not(.js) .js-only{display:none}
 .brief-text{min-width:0}
 .brief-label{font-size:var(--text-xs);color:var(--color-muted);margin:0 0 var(--space-2xs)}
 .brief-prompt{font-size:var(--text-sm);line-height:1.5;color:var(--color-ink);margin:0;overflow-wrap:break-word}
-.brief-prompt mark{background:none;color:var(--color-accent-2);font-weight:500}
+.brief-prompt mark{background:none;color:var(--color-accent-2)}
 .brief-sample{display:grid;grid-template-columns:96px minmax(0,1fr);gap:var(--space-sm);align-items:center;margin:var(--space-sm) 0 0}
 .brief-sample[hidden]{display:none}
 .brief-sample img{display:block;width:100%;height:auto}
@@ -109,7 +112,7 @@ html:not(.js) .js-only{display:none}
 .tool-logo img{display:block;width:32px;height:32px;object-fit:contain}
 .tool-logo-full{background:none}
 .tool-logo-full img{width:56px;height:56px}
-.tool-name{font-family:var(--font-display);font-weight:500;font-size:var(--text-lg);line-height:1.2;color:var(--color-ink);margin:0;overflow-wrap:break-word;min-width:0}
+.tool-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);line-height:1.2;color:var(--color-ink);margin:0;overflow-wrap:break-word;min-width:0}
 .tool-vendor{font-size:var(--text-xs);color:var(--color-muted);margin:0}
 .tool-summary{font-size:.9375rem;line-height:1.45;color:var(--color-ink);margin:var(--space-sm) 0 0}
 .tool-tags{list-style:none;display:flex;flex-wrap:wrap;gap:var(--space-xs);margin:var(--space-sm) 0 0;padding:0}

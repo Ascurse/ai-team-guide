@@ -115,7 +115,6 @@ const description = summary.replace(/<[^>]+>/g, '');
 
 <div class="layout">
 <nav class="toc" aria-label="Содержание">
-  <a class="toc-title" href={`#${titleSlug}`} set:html={title} />
   {groups.map((g) => (
     <div class="toc-part"><a class="l1" href={`#${g.slug}`}>{g.text}</a><div class="toc-sub">{g.subs.map((s) => <a href={`#${s.slug}`}>{s.text}</a>)}</div></div>
   ))}
