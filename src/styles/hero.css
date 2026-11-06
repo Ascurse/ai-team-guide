@@ -6,6 +6,7 @@
 .doors a:nth-child(1){background:var(--signal-yellow)}
 .doors a:nth-child(2){background:var(--signal-red);color:var(--on-signal);border-block:3px solid var(--color-ink)}
 .doors a:nth-child(3){background:var(--signal-blue);color:var(--on-signal)}
+.doors a:nth-child(4){background:var(--color-paper);border-block-start:3px solid var(--color-ink)}
 .doors a:hover{background:var(--color-ink);color:var(--color-paper)}
 .doors a:active{background:var(--color-ink-2)}
 .scene-fallback{align-self:center;font-size:var(--text-lead);color:var(--color-ink)}
