@@ -129,11 +129,11 @@
 Сначала задай вопросы, потом создай скилл и объясни, из чего он состоит.
 ```
 
-Где это делается (интерфейс меняется быстро, сверить с докой):
+Где это делается (сверено со справкой 06.11.2026, интерфейс меняется быстро):
 
-- **ChatGPT.** Попросите прямо в чате: он сам возьмёт встроенный skill-creator, задаст вопросы и предложит установить результат. Другой путь — раздел Skills, кнопка Create. [Справка OpenAI](https://help.openai.com/en/articles/20001066-skills-in-chatgpt) называет тарифы Business, Enterprise, Healthcare и Edu, про остальные источники расходятся.
-- **Codex.** Вызовите встроенный `$skill-creator`. Он спросит, что скилл делает и когда срабатывает ([документация](https://developers.openai.com/codex/skills/create-skill)).
-- **Claude.** В настройках включите skill-creator и опишите задачу в чате ([справка](https://support.claude.com/en/articles/12599426-how-to-create-a-skill-with-claude-through-conversation)). В Claude Code скилл тоже папка с `SKILL.md`, попросите создать её прямо в работе.
+- **ChatGPT.** Попросите прямо в чате: он сам возьмёт встроенный skill-creator, задаст вопросы и предложит установить результат. Другой путь: Plugins в боковой панели, вкладка Skills, Create, Create with chat. [Справка OpenAI](https://help.openai.com/en/articles/20001066-skills-in-chatgpt) называет тарифы Business, Enterprise, Healthcare и Edu, других там нет.
+- **Codex.** Вызовите встроенный `$skill-creator`. Он спросит, что скилл делает, когда срабатывает и нужны ли ему скрипты ([документация](https://learn.chatgpt.com/docs/build-skills)).
+- **Claude.** Откройте новый чат и напишите, что хотите создать скилл: Claude задаст вопросы и соберёт `SKILL.md` ([инструкция](https://academy.claude.com/tutorials/how-to-create-a-skill-with-claude-through-conversation)). Скиллы есть на всех тарифах, от Free до Enterprise, но нужно включённое выполнение кода, а готовые скиллы лежат в Customize > Skills ([справка](https://support.claude.com/en/articles/12512180-use-skills-in-claude)). В Claude Code скилл тоже папка с `SKILL.md`, попросите создать её прямо в работе ([документация](https://code.claude.com/docs/en/skills)).
 
 Один скилл, собранный самостоятельно, объясняет больше любой статьи: видно, что модель понимает сразу, а что нужно записать. Дальше начинаешь сам замечать рутину, которую можно снять с себя (мой опыт, без замера). Как делать скиллы для разработки, описано во второй части, в разделе «Обвязка». Чужие скиллы перед установкой читайте так же внимательно: об этом следующий раздел.
 
@@ -404,6 +404,8 @@ git clone git@github.com:Ascurse/claude-config-kit.git && cd claude-config-kit &
 | Правила | `~/.claude/CLAUDE.md` | `~/.codex/AGENTS.md` |
 | Субагенты ядра | `~/.claude/agents/*.md` | `~/.codex/agents/*.toml` |
 | Хуки, права, статуслайн | `~/.claude/` | не ставятся |
+
+Документация Codex называет для личных скиллов только `~/.agents/skills/`. Codex 0.160 и 0.162 при этом читают и старую папку `~/.codex/skills/` (замер, 06.11.2026), но это нигде не обещано, поэтому новые скиллы кладите в `~/.agents/skills/`.
 
 **Что скрипт делает с вашими файлами.** Если `CLAUDE.md` или `~/.codex/AGENTS.md` у вас уже есть, новый ляжет рядом как `CLAUDE.kit.md` или `AGENTS.kit.md`, и сливать придётся руками. Права в `settings.json` объединяются с вашими (для этого нужен `jq`), а уже настроенная секция хуков остаётся как была. `settings.json`, `thresholds.yaml`, статуслайн, а также одноимённые скиллы и субагенты на стороне Codex перед заменой копируются в `~/.claude/backups/kit-<время>/`. **Без бэкапа** перезаписываются одноимённые скиллы в `~/.claude/skills/`, субагенты в `~/.claude/agents/` и файлы в `~/.claude/hooks/`. Если у вас там есть свои с такими же именами, сохраните их до запуска.
 
