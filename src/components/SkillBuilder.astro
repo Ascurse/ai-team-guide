@@ -1,0 +1,30 @@
+---
+import { SKILL_ROUTINES, skillFile, skillPrompt, skillPromptParts } from '../data/skill.js';
+---
+<section class="fig" id="fig-skill" aria-label="Из чего состоит скилл">
+<h3>Посмотрите, что получится</h3>
+<p class="lead">Возьмём четыре рутины из первого шага. Выберите одну: появится тот же запрос, только заполненный, и файл, который примерно вернётся. Цветом отмечены его части.</p>
+<div class="row" role="group" aria-label="Какую рутину взять">
+{SKILL_ROUTINES.map((routine, i) => <button class="btn" type="button" aria-pressed={String(i === 0)} data-routine={routine.id}>{routine.label}</button>)}
+</div>
+{SKILL_ROUTINES.map((routine, i) => (
+<div class="skill" data-panel={routine.id} hidden={i !== 0}>
+  <div class="skill-ask">
+    <p class="brief-label">Запрос к модели</p>
+    <pre class="skill-code">{skillPromptParts(routine).map((part) => part.filled ? <mark>{part.text}</mark> : part.text)}</pre>
+    <p class="skill-hint">Выделено то, что стоит заменить на своё.</p>
+    <button class="btn js-only" type="button" data-copy={skillPrompt(routine)}>Скопировать запрос</button>
+  </div>
+  <div class="skill-file">
+    <p class="brief-label">Что вернётся: SKILL.md</p>
+    {skillFile(routine).map((part) => (
+    <div class={`skill-part skill-part-${part.id}`}>
+      <pre class="skill-code">{part.text}</pre>
+      <p class="skill-note"><strong>{part.label}.</strong> {part.note}</p>
+    </div>
+    ))}
+  </div>
+</div>
+))}
+<p class="note">Файлы в этом блоке написал я сам, чтобы показать устройство скилла. Это образцы, а не ответы модели: она задаст вопросы и соберёт свой вариант, разделы могут называться иначе.</p>
+</section>

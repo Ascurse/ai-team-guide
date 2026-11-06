@@ -86,3 +86,17 @@ html:not(.js) .js-only{display:none}
 .brief-sample figcaption{font-size:var(--text-xs);color:var(--color-muted)}
 .brief-result{display:block;width:100%;height:auto;aspect-ratio:760/511;background:var(--color-paper-2)}
 @media (max-width:760px){.brief{grid-template-columns:minmax(0,1fr)}}
+
+.skill{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:var(--space-lg);align-items:start;margin:var(--space-md) 0}
+.skill[hidden]{display:none}
+.skill-ask,.skill-file{min-width:0}
+.skill-code{margin:0;padding:0;background:none;border:0;color:var(--color-ink);font-family:var(--font-outlier);font-size:var(--text-xs);line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.skill-code mark{background:var(--color-paper-2);color:var(--color-ink)}
+.skill-hint{font-size:var(--text-xs);color:var(--color-muted);margin:var(--space-xs) 0 var(--space-sm)}
+.skill-part{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:var(--space-md);padding:var(--space-xs) 0 var(--space-xs) var(--space-sm);border-left:4px solid var(--c);background:var(--color-paper);margin-bottom:var(--space-2xs)}
+.skill-part-name{--c:var(--color-ink)}
+.skill-part-description{--c:var(--color-accent)}
+.skill-part-steps{--c:var(--signal-yellow)}
+.skill-part-limits{--c:var(--signal-red)}
+.skill-note{font-size:var(--text-xs);line-height:1.4;color:var(--color-ink-2);margin:0;padding-right:var(--space-sm)}
+@media (max-width:760px){.skill,.skill-part{grid-template-columns:minmax(0,1fr)}.skill-part{gap:var(--space-xs);padding-right:var(--space-sm)}.skill-note{padding-right:0}}

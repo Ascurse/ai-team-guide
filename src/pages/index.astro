@@ -7,6 +7,7 @@ import GuessDemo from '../components/GuessDemo.astro';
 import ModelLadder from '../components/ModelLadder.astro';
 import ModelPicker from '../components/ModelPicker.astro';
 import SessionCurve from '../components/SessionCurve.astro';
+import SkillBuilder from '../components/SkillBuilder.astro';
 import SpendMap from '../components/SpendMap.astro';
 import TaskCycle from '../components/TaskCycle.astro';
 import { DATA_NOTE } from '../data/freshness.js';
@@ -27,6 +28,7 @@ const WIDGETS = [
   { Widget: GuessDemo, before: /<h2[^>]*>Если не получилось<\/h2>/g },
   { Widget: ModelLadder, before: /<p>Что выбирать в разработке/g },
   { Widget: ModelPicker, before: /<p>Цены API за 1M токенов/g },
+  { Widget: SkillBuilder, before: /<p>Где это делается/g },
   { Widget: TaskCycle, before: /<p><strong>Постановка\.<\/strong>/g },
   { Widget: DelegationTree, before: /<h3[^>]*>Как это устроено в Codex<\/h3>/g },
   { Widget: SpendMap, before: /<p>Что режет расход/g },
