@@ -25,11 +25,11 @@
 .scene label{display:block;font-size:var(--text-sm);color:var(--color-muted)}
 .scene label strong{font-family:var(--font-display);font-size:var(--text-md);color:var(--color-ink)}
 .scene .row{margin:var(--space-2xs) 0 0;gap:var(--space-xs)}
-.scene .btn{border:2px solid var(--color-ink);padding:var(--space-2xs) var(--space-sm)}
+.scene .btn{padding:var(--space-2xs) var(--space-sm)}
 .scene .row .btn.primary{flex:1 0 100%}
-.scene .btn:not(.primary):not([aria-pressed="true"]){border-width:1px;border-color:var(--color-muted)}
-.scene .btn:hover:not(:disabled){background:var(--color-ink);color:var(--color-paper);border-color:var(--color-ink)}
-.btn.primary{background:var(--color-accent);border-color:var(--color-accent);color:var(--color-accent-ink)}
+.btn.primary{background:var(--color-accent);border-color:var(--color-ink);color:var(--color-accent-ink)}
+.btn.primary:hover:not(:disabled){background:var(--color-accent-2);border-color:var(--color-ink);color:var(--color-accent-ink);box-shadow:4px 4px 0 var(--color-ink)}
+.btn.primary:active:not(:disabled){transform:translate(2px,2px);box-shadow:1px 1px 0 var(--color-ink)}
 footer.site{max-width:1320px;margin-inline:auto;padding:var(--space-lg) var(--space-xl);border-top:3px solid var(--color-ink);font-size:var(--text-sm)}
 footer.site a{color:var(--color-link)}
 @media (max-width:900px){
