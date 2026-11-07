@@ -8,7 +8,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const OUT = join(ROOT, 'dist-offline/ai-team-guide.html');
 const BASE = '/ai-team-guide/';
-const MIME = { '.woff2': 'font/woff2', '.svg': 'image/svg+xml' };
+const SITE_URL = 'https://ascurse.github.io/ai-team-guide/';
+const MIME = { '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp' };
 const distPath = (url) => join(DIST, url.replace(BASE, ''));
 
 function inlineAssets(css) {
@@ -38,6 +39,12 @@ html = html.replace(/<script type="module"[^>]*>[\s\S]*?<\/script>/g, '');
 html = html.replace(/<link rel="modulepreload"[^>]*>/g, '');
 html = html.replace(/<link rel="icon"[^>]*>/, '');
 html = html.replace('</body>', () => `<script>${script}</script></body>`);
+// Картинки встраиваются в файл, ссылки на скачивание (архив, SKILL.md) ведут на опубликованный сайт
+html = html.replace(/src="(\/ai-team-guide\/[^"]+)"/g, (_, url) => {
+  const data = readFileSync(distPath(url)).toString('base64');
+  return `src="data:${MIME[extname(url)]};base64,${data}"`;
+});
+html = html.replace(/href="\/ai-team-guide\//g, `href="${SITE_URL}`);
 
 if (/(src|href)="\/ai-team-guide\//.test(html)) throw new Error('В офлайн-файле осталась внешняя ссылка');
 mkdirSync(dirname(OUT), { recursive: true });

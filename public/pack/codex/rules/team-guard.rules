@@ -1,0 +1,113 @@
+# team-guard.rules — execpolicy-правила команды для Codex.
+# Установка: скопировать в ~/.codex/rules/ (пользовательские правила).
+# Проверка: codex execpolicy check --rules team-guard.rules <команда>
+#
+# Принцип: подтверждение человека — только на необратимое.
+# prompt    — Codex спросит перед запуском;
+# forbidden — не запустит вовсе.
+# При нескольких совпадениях побеждает самое строгое: forbidden > prompt > allow.
+
+# --- git: переписывание истории и потеря работы ---
+
+prefix_rule(
+    pattern = ["git", "push", ["--force", "-f", "--force-with-lease"]],
+    decision = "prompt",
+    justification = "force-push переписывает историю на удалённой ветке",
+    match = [["git", "push", "--force", "origin", "feature"], ["git", "push", "-f"]],
+    not_match = [["git", "push", "origin", "feature"]],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "origin", ["main", "master"]],
+    decision = "prompt",
+    justification = "прямой пуш в основную ветку — только через PR",
+    match = [["git", "push", "origin", "main"]],
+    not_match = [["git", "push", "origin", "feat/x"]],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "prompt",
+    justification = "git reset --hard выбрасывает незакоммиченные изменения",
+    match = [["git", "reset", "--hard", "HEAD~1"]],
+    not_match = [["git", "reset", "--soft", "HEAD~1"]],
+)
+
+prefix_rule(
+    pattern = ["git", "clean", ["-fd", "-df", "-fdx", "-xdf", "-f"]],
+    decision = "prompt",
+    justification = "git clean удаляет неотслеживаемые файлы без возврата",
+    match = [["git", "clean", "-fdx"]],
+    not_match = [["git", "status"]],
+)
+
+# --- удаление ---
+
+prefix_rule(
+    pattern = ["rm", ["-rf", "-fr", "-Rf", "-r", "-R"]],
+    decision = "prompt",
+    justification = "рекурсивное удаление необратимо",
+    match = [["rm", "-rf", "dist"], ["rm", "-r", "src"]],
+    not_match = [["rm", "file.txt"]],
+)
+
+# --- инфраструктура и данные ---
+
+prefix_rule(
+    pattern = ["terraform", "destroy"],
+    decision = "forbidden",
+    justification = "уничтожение инфраструктуры — только руками человека",
+    match = [["terraform", "destroy", "-auto-approve"]],
+    not_match = [["terraform", "plan"]],
+)
+
+prefix_rule(
+    pattern = ["terraform", "apply"],
+    decision = "prompt",
+    justification = "изменение инфраструктуры",
+    match = [["terraform", "apply"]],
+    not_match = [["terraform", "plan"]],
+)
+
+prefix_rule(
+    pattern = ["kubectl", ["delete", "apply", "scale", "rollout"]],
+    decision = "prompt",
+    justification = "изменение кластера",
+    match = [["kubectl", "delete", "pod", "x"]],
+    not_match = [["kubectl", "get", "pods"]],
+)
+
+prefix_rule(
+    pattern = ["npx", "prisma", "migrate", ["deploy", "reset"]],
+    decision = "prompt",
+    justification = "миграции применяются к БД из DATABASE_URL — проверить, что она не боевая",
+    match = [["npx", "prisma", "migrate", "reset"]],
+    not_match = [["npx", "prisma", "migrate", "dev"]],
+)
+
+# --- установка чужого кода ---
+
+prefix_rule(
+    pattern = [["npm", "pnpm"], ["install", "i", "add"], ["-g", "--global"]],
+    decision = "prompt",
+    justification = "глобальная установка пакета ставит код вне проекта",
+    match = [["npm", "i", "-g", "some-cli"]],
+    not_match = [["npm", "i", "lodash"]],
+)
+
+prefix_rule(
+    pattern = ["npx", "skills", "add"],
+    decision = "prompt",
+    justification = "чужой скилл — только после аудита: форк, чтение scripts/ и tests/, пин по SHA",
+    match = [["npx", "skills", "add", "acme/x"]],
+)
+
+# --- секреты ---
+
+prefix_rule(
+    pattern = [["cat", "less", "head", "tail"], [".env", ".env.local", ".env.production"]],
+    decision = "prompt",
+    justification = "вывод секретов попадает в контекст модели и логи",
+    match = [["cat", ".env"]],
+    not_match = [["cat", ".env.example"]],
+)

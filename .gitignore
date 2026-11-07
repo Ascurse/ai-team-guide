@@ -3,3 +3,5 @@ dist/
 dist-offline/
 .astro/
 .DS_Store
+
+public/ai-team-skills.zip

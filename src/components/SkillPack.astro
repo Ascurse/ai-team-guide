@@ -1,0 +1,132 @@
+---
+import { readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  ALL_AUDIENCES_FILTER,
+  ALL_CATEGORIES_FILTER,
+  PACK_AUDIENCES,
+  PACK_CATEGORIES,
+  PACK_DIR,
+  PACK_INSTALL,
+  PACK_SKILLS,
+  PACK_ZIP,
+} from '../data/pack.js';
+
+const PUBLIC_DIR = join(process.cwd(), 'public');
+// description из SKILL.md: так скилл видит агент, когда решает, вызывать ли его
+function agentDescription(path) {
+  const source = readFileSync(join(PUBLIC_DIR, PACK_DIR, path, 'SKILL.md'), 'utf8');
+  const line = source.match(/^description:\s*(.+)$/m)?.[1] ?? '';
+  return line.replace(/^"(.*)"$/, '$1').replaceAll('\\"', '"');
+}
+
+const zipKb = Math.round(statSync(join(PUBLIC_DIR, PACK_ZIP)).size / 1024);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const AUDIENCE_LABELS = Object.fromEntries(PACK_AUDIENCES.map((audience) => [audience.id, audience.label]));
+const AUDIENCE_FILTERS = [{ id: ALL_AUDIENCES_FILTER, label: 'Для всех' }, ...PACK_AUDIENCES];
+const CATEGORY_FILTERS = [{ id: ALL_CATEGORIES_FILTER, label: 'Все разделы' }, ...PACK_CATEGORIES];
+const GROUPS = PACK_CATEGORIES.map((category) => ({
+  ...category,
+  skills: PACK_SKILLS.filter((skill) => skill.category === category.id).map((skill) => ({
+    ...skill,
+    description: agentDescription(skill.path),
+  })),
+}));
+const countFor = (audience) => PACK_SKILLS.filter((skill) => skill.audience === audience).length;
+---
+<section class="fig" id="fig-pack" aria-label="Пак скиллов">
+<h3>{PACK_SKILLS.length} скилла одним архивом</h3>
+<p class="lead">Всё, о чём шла речь в гайде, плюс скиллы, которые я гоняю каждый день. Скачайте целиком или соберите свой набор: отметьте нужные карточки, и команда установки соберётся сама.</p>
+
+<div class="pack-download">
+  <a class="btn primary pack-zip" href={`${base}/${PACK_ZIP}`} download>Скачать архив, {zipKb} КБ</a>
+  <dl class="pack-stats">
+    <div><dt>ChatGPT</dt><dd>{countFor('chatgpt')}</dd></div>
+    <div><dt>Claude Code и Codex</dt><dd>{countFor('dev')}</dd></div>
+    <div><dt>Разделов</dt><dd>{PACK_CATEGORIES.length}</dd></div>
+  </dl>
+  <p class="pack-readme">Внутри README с установкой и <a href={`${base}/${PACK_DIR}/THIRD_PARTY.md`}>THIRD_PARTY.md</a>: шесть скиллов взяты из открытых наборов и переработаны.</p>
+</div>
+
+<h3 class="sub">Установка</h3>
+<div class="row js-only" role="group" aria-label="Куда ставить">
+  {PACK_INSTALL.map((target, index) => (
+    <button class="btn" type="button" aria-pressed={String(index === 0)} data-pack-install={target.id}>{target.label}</button>
+  ))}
+</div>
+{PACK_INSTALL.map((target, index) => (
+  <div class="pack-install" data-install-panel={target.id} hidden={index !== 0}>
+    <p class="pack-install-title">{target.label}. Из распакованной папки ai-team-skills:</p>
+    <pre class="pack-cmd"><code>{target.steps.join('\n')}</code></pre>
+    <button class="btn js-only" type="button" data-copy={target.steps.join('\n')}>Скопировать</button>
+    <p class="pack-install-note">{target.note}</p>
+  </div>
+))}
+
+<h3 class="sub">Что внутри</h3>
+<div class="tool-filters js-only">
+  <div class="row" role="group" aria-label="Для какого агента">
+    {AUDIENCE_FILTERS.map((filter) => (
+      <button class="btn" type="button" aria-pressed={String(filter.id === ALL_AUDIENCES_FILTER)} data-pack-audience={filter.id}>{filter.label}</button>
+    ))}
+  </div>
+  <div class="row" role="group" aria-label="Раздел">
+    {CATEGORY_FILTERS.map((filter) => (
+      <button class="btn" type="button" aria-pressed={String(filter.id === ALL_CATEGORIES_FILTER)} data-pack-category={filter.id}>{filter.label}</button>
+    ))}
+  </div>
+  <label class="pack-search">
+    <span>Поиск по названию и описанию</span>
+    <input type="search" data-pack-search placeholder="например, коммит или лимит" autocomplete="off" />
+  </label>
+</div>
+<p class="tools-count js-only" role="status" data-pack-count></p>
+
+{GROUPS.map((group) => (
+  <div class="tool-group" data-pack-group={group.id}>
+    <div class="tool-group-head">
+      <h4 class="tool-group-title">{group.label}</h4>
+      <span class="tool-group-count" data-pack-group-count>{group.skills.length}</span>
+    </div>
+    <p class="tool-group-desc">{group.description}</p>
+    <ul class="pack-skills">
+      {group.skills.map((skill) => (
+        <li class="pack-skill" data-pack-id={skill.id} data-pack-aud={skill.audience} data-pack-cat={skill.category} data-pack-text={`${skill.id} ${skill.summary} ${skill.trigger}`.toLowerCase()}>
+          <div class="pack-skill-head">
+            <h5 class="pack-skill-name">{skill.id}</h5>
+            {skill.audience === 'dev' && (
+              <label class="pack-pick js-only">
+                <input type="checkbox" data-pack-pick={skill.id} />
+                <span>В мой набор</span>
+              </label>
+            )}
+          </div>
+          <ul class="tool-tags" aria-label="Свойства">
+            <li>{AUDIENCE_LABELS[skill.audience]}</li>
+            <li>{skill.manual ? 'Только по команде' : 'Срабатывает сам'}</li>
+            {skill.needs && <li class="pack-tag-needs">Нужен {skill.needs}</li>}
+            {skill.origin && <li>Из {skill.origin}</li>}
+          </ul>
+          <p class="tool-summary">{skill.summary}</p>
+          <p class="pack-trigger"><span>Как вызвать</span> {skill.trigger}</p>
+          <details class="pack-desc">
+            <summary>Как его видит агент</summary>
+            <p>{skill.description}</p>
+          </details>
+          <p class="tool-links"><a href={`${base}/${PACK_DIR}/${skill.path}/SKILL.md`}>Открыть SKILL.md</a></p>
+        </li>
+      ))}
+    </ul>
+  </div>
+))}
+
+<div class="pack-cart js-only" data-pack-cart>
+  <p class="pack-cart-status" role="status" data-pack-cart-status>Отметьте карточки «В мой набор», и здесь появится команда установки только их.</p>
+  <pre class="pack-cmd" data-pack-cart-cmd hidden><code></code></pre>
+  <div class="row">
+    <button class="btn primary" type="button" data-pack-cart-copy disabled>Скопировать команду</button>
+    <button class="btn" type="button" data-pack-cart-reset disabled>Сбросить</button>
+  </div>
+</div>
+<p class="note">Команда рассчитана на Claude Code и запускается из распакованной папки. Для Codex замените путь на ~/.agents/skills/. ChatGPT-скиллы ставятся загрузкой архива, в команду не попадают. Перед установкой прочитайте SKILL.md: скилл исполняется с правами агента.</p>
+</section>

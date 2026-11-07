@@ -9,6 +9,7 @@ import ModelPicker from '../components/ModelPicker.astro';
 import SessionCurve from '../components/SessionCurve.astro';
 import SkillBuilder from '../components/SkillBuilder.astro';
 import ToolsCatalog from '../components/ToolsCatalog.astro';
+import SkillPack from '../components/SkillPack.astro';
 import SpendMap from '../components/SpendMap.astro';
 import TaskCycle from '../components/TaskCycle.astro';
 import { DATA_NOTE } from '../data/freshness.js';
@@ -34,7 +35,8 @@ const WIDGETS = [
   { Widget: DelegationTree, before: /<h3[^>]*>Как это устроено в Codex<\/h3>/g },
   { Widget: SpendMap, before: /<p>Что режет расход/g },
   { Widget: SessionCurve, before: /<p>Что не сработало или вредит/g },
-  { Widget: ToolsCatalog, before: /<h1[^>]*>Напоследок<\/h1>/g },
+  { Widget: ToolsCatalog, before: /<h1[^>]*>Пак скиллов<\/h1>/g },
+  { Widget: SkillPack, before: /<h1[^>]*>Напоследок<\/h1>/g },
 ];
 
 // Вики-ссылки vault снимаются здесь: guide.md побайтно совпадает с источником
