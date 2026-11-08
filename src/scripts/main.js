@@ -8,17 +8,24 @@ import { initCurve, initDelegation, initLadder } from './explainers.js';
 import { initSpend } from './spend.js';
 import { initCycle } from './motion.js';
 
-initSim();
-initBrief();
-initSkill();
-initTools();
-initPack();
-initGuess();
-initPicker();
+// На странице только её виджеты, а init без своего корня падает на первом обращении к DOM
+const WIDGET_INITS = [
+  ['fig-context', initSim],
+  ['fig-brief', initBrief],
+  ['fig-skill', initSkill],
+  ['fig-tools', initTools],
+  ['fig-pack', initPack],
+  ['fig-guess', initGuess],
+  ['fig-picker', initPicker],
+  ['fig-ladder', initLadder],
+  ['fig-cycle', initCycle],
+  ['fig-delegation', initDelegation],
+  ['fig-curve', initCurve],
+  ['fig-spend', initSpend],
+  ['scene', initHero],
+];
+
 initNav();
-initLadder();
-initCycle();
-initDelegation();
-initCurve();
-initSpend();
-initHero();
+for (const [rootId, init] of WIDGET_INITS) {
+  if (document.getElementById(rootId)) init();
+}

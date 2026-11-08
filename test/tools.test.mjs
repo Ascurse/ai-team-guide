@@ -66,7 +66,12 @@ test('без фильтра видны все карточки', () => {
   assert.equal(filterTools(TOOLS, 'all').length, TOOLS.length);
 });
 
-test('в гайде есть отдельная часть перед «Напоследок»', () => {
+test('в гайде есть отдельная страница перед «Скачать»', () => {
   assert.ok(guide.indexOf('\n# Инструменты\n') > 0);
-  assert.ok(guide.indexOf('\n# Инструменты\n') < guide.indexOf('\n# Напоследок\n'));
+  assert.ok(guide.indexOf('\n# Инструменты\n') < guide.indexOf('\n# Скачать\n'));
+});
+
+test('каталог идёт перед таблицей «Мой стек» на той же странице', () => {
+  assert.ok(guide.indexOf('\n# Инструменты\n') < guide.indexOf('\n## Мой стек'));
+  assert.ok(guide.indexOf('\n## Мой стек') < guide.indexOf('\n# Скачать\n'));
 });

@@ -39,11 +39,25 @@ test('в паке нет командного процесса и утечек �
   assert.ok(existsSync(new URL('../public/pack/THIRD_PARTY.md', import.meta.url)));
 });
 
-test('часть «Пак скиллов» стоит между «Инструменты» и «Напоследок»', () => {
-  const tools = guide.indexOf('\n# Инструменты');
-  const pack = guide.indexOf('\n# Пак скиллов');
-  const finale = guide.indexOf('\n# Напоследок');
-  assert.ok(tools !== -1 && tools < pack && pack < finale);
+test('гайд режется на семь страниц в порядке навигации', () => {
+  const withoutCode = guide.replace(/^```[\s\S]*?^```/gm, '');
+  const titles = [...withoutCode.matchAll(/^# (.+)$/gm)].map((match) => match[1]);
+  assert.deepEqual(titles, [
+    'Как работать с AI: ChatGPT, Codex, Claude и Claude Code',
+    'Часть 1. Для всех',
+    'Часть 2. Для разработки: Claude Code и Codex',
+    'Часть 3. Продвинутое',
+    'Модели и цены',
+    'Инструменты',
+    'Скачать',
+  ]);
+});
+
+test('«Пак скиллов» и «Готовый набор» лежат на странице «Скачать»', () => {
+  const download = guide.indexOf('\n# Скачать\n');
+  assert.ok(download !== -1);
+  assert.ok(download < guide.indexOf('\n## Пак скиллов'));
+  assert.ok(guide.indexOf('\n## Пак скиллов') < guide.indexOf('\n## Готовый набор'));
 });
 
 test('installCommand: одна, несколько, только ChatGPT, пусто', () => {

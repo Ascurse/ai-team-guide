@@ -6,6 +6,7 @@ import DelegationTree from '../components/DelegationTree.astro';
 import GuessDemo from '../components/GuessDemo.astro';
 import ModelLadder from '../components/ModelLadder.astro';
 import ModelPicker from '../components/ModelPicker.astro';
+import PageToc from '../components/PageToc.astro';
 import SessionCurve from '../components/SessionCurve.astro';
 import SkillBuilder from '../components/SkillBuilder.astro';
 import ToolsCatalog from '../components/ToolsCatalog.astro';
@@ -14,6 +15,7 @@ import SpendMap from '../components/SpendMap.astro';
 import TaskCycle from '../components/TaskCycle.astro';
 import { DATA_NOTE } from '../data/freshness.js';
 import { addDataNotes } from '../lib/data-notes.mjs';
+import { buildPages, pageUrl } from '../lib/pages.mjs';
 import '../styles/fonts.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
@@ -22,70 +24,60 @@ import '../styles/workshop.css';
 import '../styles/hero.css';
 import '../styles/explainers.css';
 
-const REPO_URL = 'https://github.com/Ascurse/ai-team-guide';
-const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
-const WIDGETS = [
-  { Widget: BriefBuilder, before: /<h2[^>]*>Контекст<\/h2>/g },
-  { Widget: ContextSim, before: /<h2[^>]*>Проверка<\/h2>/g },
-  { Widget: GuessDemo, before: /<h2[^>]*>Если не получилось<\/h2>/g },
-  { Widget: ModelLadder, before: /<p>Что выбирать в разработке/g },
-  { Widget: ModelPicker, before: /<p>Цены API за 1M токенов/g },
-  { Widget: SkillBuilder, before: /<p>Где это делается/g },
-  { Widget: TaskCycle, before: /<p><strong>Постановка\.<\/strong>/g },
-  { Widget: DelegationTree, before: /<h3[^>]*>Как это устроено в Codex<\/h3>/g },
-  { Widget: SpendMap, before: /<p>Что режет расход/g },
-  { Widget: SessionCurve, before: /<p>Что не сработало или вредит/g },
-  { Widget: ToolsCatalog, before: /<h1[^>]*>Пак скиллов<\/h1>/g },
-  { Widget: SkillPack, before: /<h1[^>]*>Напоследок<\/h1>/g },
-];
-
-// Вики-ссылки vault снимаются здесь: guide.md побайтно совпадает с источником
-const compiled = addDataNotes((await guide.compiledContent()).replace(/\[\[([^\]]+)\]\]/g, '$1'), DATA_NOTE).replaceAll('<table>', '<div class="tw"><table>').replaceAll('</table>', '</table></div>');
-const intro = compiled.match(/^\s*<h1[^>]*>(.*?)<\/h1>\s*<p>(.*?)<\/p>/s);
-if (!intro) throw new Error('Гайд должен начинаться с заголовка и абзаца');
-const [introBlock, title, summary] = intro;
-const body = compiled.slice(introBlock.length);
-
-// Интерактивы встают в текст перед своими якорями
-const cuts = WIDGETS.map(({ Widget, before }) => {
-  const found = [...body.matchAll(before)];
-  if (found.length !== 1) throw new Error(`Якорь ${before} найден ${found.length} раз`);
-  return { Widget, at: found[0].index };
-}).sort((a, b) => a.at - b.at);
-const parts = cuts.map((cut, i) => ({ html: body.slice(i ? cuts[i - 1].at : 0, cut.at), Widget: cut.Widget }));
-const tail = body.slice(cuts.at(-1).at);
-
-const headings = guide.getHeadings().filter((h) => h.depth <= 2);
-const titleSlug = headings[0].slug;
-const groups = [];
-for (const h of headings.slice(1)) {
-  if (h.depth === 1) groups.push({ ...h, subs: [] });
-  else groups.at(-1).subs.push(h);
+export async function getStaticPaths() {
+  const WIDGETS = [
+    { Widget: BriefBuilder, before: /<h2[^>]*>Контекст<\/h2>/g },
+    { Widget: ContextSim, before: /<h2[^>]*>Проверка<\/h2>/g },
+    { Widget: GuessDemo, before: /<h2[^>]*>Если не получилось<\/h2>/g },
+    { Widget: ModelLadder, before: /<h2[^>]*>Модели в разработке<\/h2>/g },
+    { Widget: ModelPicker, before: /<p>Цены API за 1M токенов/g },
+    { Widget: SkillBuilder, before: /<p>Где это делается/g },
+    { Widget: TaskCycle, before: /<p><strong>Постановка\.<\/strong>/g },
+    { Widget: DelegationTree, before: /<h3[^>]*>Как это устроено в Codex<\/h3>/g },
+    { Widget: SpendMap, before: /<p>Что режет расход/g },
+    { Widget: SessionCurve, before: /<p>Что не сработало или вредит/g },
+    { Widget: ToolsCatalog, before: /<h2[^>]*>Мой стек/g },
+    { Widget: SkillPack, before: /<h2[^>]*>Готовый набор/g },
+  ];
+  // Вики-ссылки vault снимаются здесь: guide.md побайтно совпадает с источником
+  const html = addDataNotes((await guide.compiledContent()).replace(/\[\[([^\]]+)\]\]/g, '$1'), DATA_NOTE).replaceAll('<table>', '<div class="tw"><table>').replaceAll('</table>', '</table></div>');
+  const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+  const pages = buildPages({ html, headings: guide.getHeadings(), base, widgets: WIDGETS });
+  return pages.map((current) => ({ params: { page: current.slug || undefined }, props: { current, pages } }));
 }
-const plainTitle = title.replace(/<[^>]+>/g, '');
-const description = summary.replace(/<[^>]+>/g, '');
+
+const REPO_URL = 'https://github.com/Ascurse/ai-team-guide';
+const SITE_TITLE = 'Как работать с AI';
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const { current, pages } = Astro.props;
+const [home] = pages;
+const isHome = current === home;
+const stripTags = (html) => html.replace(/<[^>]+>/g, '');
+const plainTitle = stripTags(home.title);
+const description = stripTags(home.summary);
 ---
 <!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Как работать с AI</title>
+<title>{isHome ? SITE_TITLE : `${current.nav} · ${SITE_TITLE}`}</title>
 <meta name="description" content={description}>
-<meta property="og:title" content={plainTitle}>
+<meta property="og:title" content={isHome ? plainTitle : `${current.nav} · ${SITE_TITLE}`}>
 <meta property="og:description" content={description}>
 <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml">
 </head>
 <body>
 <div class="progress" aria-hidden="true"><i id="progress"></i></div>
 
+{isHome && (
 <header class="hero">
   <div>
-    <h1 class="top" id={titleSlug} set:html={title} />
-    <p class="sum" set:html={summary} />
-    <div class="doors">{groups.map((g) => <a href={`#${g.slug}`}>{g.text}</a>)}</div>
+    <h1 class="top" id={home.anchor} set:html={home.title} />
+    <p class="sum" set:html={home.summary} />
+    <div class="doors">{pages.slice(1).map((page) => <a href={pageUrl(base, page.slug)}>{page.nav}</a>)}</div>
   </div>
-  <p class="scene-fallback" id="scene-fallback">Как устроена сессия с моделью, показывает <a href="#fig-context">симулятор контекста</a> в первой части.</p>
+  <p class="scene-fallback" id="scene-fallback">Как устроена сессия с моделью, показывает <a href={`${pageUrl(base, 'everyone')}#fig-context`}>симулятор контекста</a> на странице «Для всех».</p>
   <section class="scene" id="scene" aria-label="Стопка контекста" hidden>
     <h2>Каждый ход модель читает всё заново</h2>
     <div class="stage" id="stage" role="img" aria-label="Стопка контекста: растёт с каждым ходом, значения показаны ниже">
@@ -114,23 +106,26 @@ const description = summary.replace(/<[^>]+>/g, '');
     </div>
   </section>
 </header>
+)}
 
 <div class="layout">
 <nav class="toc" aria-label="Содержание">
-  {groups.map((g) => (
-    <div class="toc-part"><a class="l1" href={`#${g.slug}`}>{g.text}</a><div class="toc-sub">{g.subs.map((s) => <a href={`#${s.slug}`}>{s.text}</a>)}</div></div>
-  ))}
+  <PageToc pages={pages} current={current} base={base} />
 </nav>
 <main>
   <div class="mobile-bar">
     <details class="mobile-toc"><summary>Содержание</summary><div class="toc-list">
-      {groups.map((g) => (
-        <div class="toc-part"><a class="l1" href={`#${g.slug}`}>{g.text}</a><div class="toc-sub">{g.subs.map((s) => <a href={`#${s.slug}`}>{s.text}</a>)}</div></div>
-      ))}
+      <PageToc pages={pages} current={current} base={base} />
     </div></details>
   </div>
-  {parts.map(({ html, Widget }) => (<Fragment set:html={html} /><Widget />))}
-  <Fragment set:html={tail} />
+  <article class="page">
+    {current.parts.map(({ html, Widget }) => (<Fragment set:html={html} /><Widget />))}
+    <Fragment set:html={current.tail} />
+    <nav class="pager" aria-label="Соседние страницы">
+      {current.prev && <a class="prev" rel="prev" href={pageUrl(base, current.prev.slug)}>← {current.prev.nav}</a>}
+      {current.next && <a class="next" rel="next" href={pageUrl(base, current.next.slug)}>{current.next.nav} →</a>}
+    </nav>
+  </article>
 </main>
 </div>
 

@@ -1,0 +1,10 @@
+---
+import { pageUrl } from '../lib/pages.mjs';
+
+const { pages, current, base } = Astro.props;
+---
+{pages.map((page) => page === current ? (
+  <div class="toc-part current"><a class="l1" href={`#${page.anchor}`}>{page.nav}</a><div class="toc-sub">{page.subs.map((sub) => <a href={`#${sub.slug}`}>{sub.text}</a>)}</div></div>
+) : (
+  <div class="toc-part"><a class="l1" href={pageUrl(base, page.slug)}>{page.nav}</a></div>
+))}
