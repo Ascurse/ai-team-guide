@@ -1,6 +1,9 @@
 import { animate, inView, scroll, stagger } from 'motion';
-import { CYCLE_EDGES, CYCLE_FRAMES, VERDICT_NO, VERDICT_YES } from '../data/cycle.js';
+import * as ruCycle from '../data/cycle.js';
+import * as enCycle from '../data/en/cycle.js';
+import { LANG, T } from './lang.js';
 
+const { CYCLE_EDGES, CYCLE_FRAMES, VERDICT_NO, VERDICT_YES } = LANG === 'en' ? enCycle : ruCycle;
 const $ = (id) => document.getElementById(id);
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DOT_SIZE = 14;
@@ -61,7 +64,7 @@ export function initCycle() {
     node.classList.add('is-on');
     if (frame.verdict === VERDICT_NO) node.classList.add('is-no');
     if (frame.verdict === VERDICT_YES) node.classList.add('is-yes');
-    $('cy-count').textContent = `Шаг ${index + 1} из ${CYCLE_FRAMES.length}`;
+    $('cy-count').textContent = T.cycle.step(index + 1, CYCLE_FRAMES.length);
     $('cy-text').textContent = frame.text;
     animate($('cy-text'), { opacity: [0, 1], y: [6, 0] }, { duration: 0.2 });
     animate(dot, dotTarget(frame.node), isFirstShow ? { duration: 0 } : SETTLE);

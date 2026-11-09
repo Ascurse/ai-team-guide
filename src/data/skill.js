@@ -1,3 +1,5 @@
+import { skillLogic } from './logic.js';
+
 // Совпадает с шаблоном в разделе гайда, это проверяет тест
 export const SKILL_PROMPT_TEMPLATE = `Хочу сделать скилл для повторяющейся задачи: <что делаю и как часто>.
 Вот как выглядит хороший результат: <образец>.
@@ -50,22 +52,11 @@ export const SKILL_ROUTINES = [
   },
 ];
 
-const SKILL_PARTS = [
-  { id: 'name', label: 'Имя', note: 'Короткое имя. Обычно так же называется папка скилла.', text: (r) => `---\nname: ${r.name}` },
-  { id: 'description', label: 'Описание', note: 'Главная строка: по ней модель решает, запускать ли скилл. Если написать расплывчато, она может его не запустить.', text: (r) => `description: ${r.description}\n---` },
-  { id: 'steps', label: 'Шаги', note: 'То, что вы каждый раз объясняете заново.', text: (r) => `## Шаги\n${r.steps.map((step, i) => `${i + 1}. ${step}`).join('\n')}` },
-  { id: 'limits', label: 'Границы', note: 'Что скиллу делать нельзя. Для первого раза запретите всё необратимое.', text: (r) => `## Границы\n${r.limits}` },
+export const SKILL_PARTS = [
+  { id: 'name', label: 'Имя', note: 'Короткое имя. Обычно так же называется папка скилла.' },
+  { id: 'description', label: 'Описание', note: 'Главная строка: по ней модель решает, запускать ли скилл. Если написать расплывчато, она может его не запустить.' },
+  { id: 'steps', label: 'Шаги', note: 'То, что вы каждый раз объясняете заново.' },
+  { id: 'limits', label: 'Границы', note: 'Что скиллу делать нельзя. Для первого раза запретите всё необратимое.' },
 ];
 
-// Строки запроса с отмеченными местами, куда подставлена рутина
-export const skillPromptParts = (routine) => [
-  { text: 'Хочу сделать скилл для повторяющейся задачи: ' },
-  { text: routine.task, filled: true },
-  { text: '.\nВот как выглядит хороший результат: ' },
-  { text: routine.sample, filled: true },
-  { text: '.\nСначала задай вопросы, потом создай скилл и объясни, из чего он состоит.' },
-];
-
-export const skillPrompt = (routine) => skillPromptParts(routine).map((part) => part.text).join('');
-
-export const skillFile = (routine) => SKILL_PARTS.map(({ text, ...part }) => ({ ...part, text: text(routine) }));
+export const { skillPromptParts, skillPrompt, skillFile } = skillLogic(SKILL_PROMPT_TEMPLATE, SKILL_PARTS);

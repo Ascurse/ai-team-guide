@@ -20,6 +20,6 @@ jobs:
       - run: yarn test
       - run: yarn build
       - run: yarn offline
-      - run: gh release create "$GITHUB_REF_NAME" dist-offline/ai-team-guide.html --generate-notes
+      - run: gh release create "$GITHUB_REF_NAME" dist-offline/ai-team-guide.html dist-offline/ai-team-guide.en.html --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}

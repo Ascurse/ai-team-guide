@@ -7,7 +7,7 @@ import { PAGES } from '../src/lib/pages.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
-const OUT = join(ROOT, 'dist-offline/ai-team-guide.html');
+const OUT_DIR = join(ROOT, 'dist-offline');
 const BASE = '/ai-team-guide/';
 const SITE_URL = 'https://ascurse.github.io/ai-team-guide/';
 const MIME = { '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp' };
@@ -15,6 +15,10 @@ const ARTICLE = /<article class="page"[^>]*>[\s\S]*?<\/article>/;
 const PAGER = /<nav class="pager"[\s\S]*?<\/nav>/;
 const CURRENT_TOC_PART = /<div class="toc-part current">[\s\S]*?<\/div><\/div>/;
 const distPath = (url) => join(DIST, url.replace(BASE, ''));
+const BUILDS = [
+  { pageBase: BASE, file: 'ai-team-guide.html' },
+  { pageBase: `${BASE}en/`, file: 'ai-team-guide.en.html' },
+];
 
 function inlineAssets(css) {
   return css.replace(/url\((["']?)(\/ai-team-guide\/[^"')]+)\1\)/g, (_, __, url) => {
@@ -32,9 +36,9 @@ function extract(html, pattern, slug) {
 }
 
 // Офлайн остаётся одной лентой: шелл главной, статьи всех страниц подряд, разделы всех страниц в оглавлении
-function mergePages() {
+function mergePages({ pageBase }) {
   const pages = PAGES.map(({ slug }) => {
-    const html = readFileSync(join(DIST, slug, 'index.html'), 'utf8');
+    const html = readFileSync(join(DIST, pageBase.replace(BASE, ''), slug, 'index.html'), 'utf8');
     const toc = extract(html, CURRENT_TOC_PART, slug);
     return {
       slug,
@@ -52,7 +56,7 @@ function mergePages() {
   const toc = pages.map((page) => page.toc).join('');
   const anchors = new Map(pages.map((page) => [page.slug, page.anchor]));
   const pageSlugs = pages.map((page) => page.slug).filter(Boolean).join('|');
-  const pageLink = new RegExp(`href="${BASE}(?:(${pageSlugs})/)?(#[^"]*)?"`, 'g');
+  const pageLink = new RegExp(`href="${pageBase}(?:(${pageSlugs})/)?(#[^"]*)?"`, 'g');
   return home.html
     .replace(/(<nav class="toc"[^>]*>)[\s\S]*?(<\/nav>)/, (_, open, close) => open + toc + close)
     .replace(/(<div class="toc-list">)[\s\S]*?(<\/div><\/details>)/, (_, open, close) => open + toc + close)
@@ -70,24 +74,27 @@ const bundled = await build({
 });
 const script = bundled.outputFiles[0].text.replaceAll('</script', '<\\/script');
 
-let html = mergePages();
-html = html.replace(/<link rel="stylesheet" href="([^"]+)"[^>]*>/g, (_, url) => `<style>${inlineAssets(readFileSync(distPath(url), 'utf8'))}</style>`);
-html = html.replace(/<style>([\s\S]*?)<\/style>/g, (_, css) => `<style>${inlineAssets(css)}</style>`);
-// Минификатор срезает комментарии, а линтер читает решения из шапки CSS
-const lintHeader = readFileSync(join(ROOT, 'src/styles/base.css'), 'utf8').match(/^(?:\/\*.*\*\/\n)+/)[0];
-html = html.replace('<style>', () => `<style>${lintHeader}`);
-html = html.replace(/<script type="module"[^>]*>[\s\S]*?<\/script>/g, '');
-html = html.replace(/<link rel="modulepreload"[^>]*>/g, '');
-html = html.replace(/<link rel="icon"[^>]*>/, '');
-html = html.replace('</body>', () => `<script>${script}</script></body>`);
-// Картинки встраиваются в файл, ссылки на скачивание (архив, SKILL.md) ведут на опубликованный сайт
-html = html.replace(/src="(\/ai-team-guide\/[^"]+)"/g, (_, url) => {
-  const data = readFileSync(distPath(url)).toString('base64');
-  return `src="data:${MIME[extname(url)]};base64,${data}"`;
-});
-html = html.replace(/href="\/ai-team-guide\//g, `href="${SITE_URL}`);
+mkdirSync(OUT_DIR, { recursive: true });
+for (const target of BUILDS) {
+  let html = mergePages(target);
+  html = html.replace(/<link rel="stylesheet" href="([^"]+)"[^>]*>/g, (_, url) => `<style>${inlineAssets(readFileSync(distPath(url), 'utf8'))}</style>`);
+  html = html.replace(/<style>([\s\S]*?)<\/style>/g, (_, css) => `<style>${inlineAssets(css)}</style>`);
+  // Минификатор срезает комментарии, а линтер читает решения из шапки CSS
+  const lintHeader = readFileSync(join(ROOT, 'src/styles/base.css'), 'utf8').match(/^(?:\/\*.*\*\/\n)+/)[0];
+  html = html.replace('<style>', () => `<style>${lintHeader}`);
+  html = html.replace(/<script type="module"[^>]*>[\s\S]*?<\/script>/g, '');
+  html = html.replace(/<link rel="modulepreload"[^>]*>/g, '');
+  html = html.replace(/<link rel="icon"[^>]*>/, '');
+  html = html.replace('</body>', () => `<script>${script}</script></body>`);
+  // Картинки встраиваются в файл, ссылки на скачивание (архив, SKILL.md) ведут на опубликованный сайт
+  html = html.replace(/src="(\/ai-team-guide\/[^"]+)"/g, (_, url) => {
+    const data = readFileSync(distPath(url)).toString('base64');
+    return `src="data:${MIME[extname(url)]};base64,${data}"`;
+  });
+  html = html.replace(/href="\/ai-team-guide\//g, `href="${SITE_URL}`);
 
-if (/(src|href)="\/ai-team-guide\//.test(html)) throw new Error('В офлайн-файле осталась внешняя ссылка');
-mkdirSync(dirname(OUT), { recursive: true });
-writeFileSync(OUT, html);
-console.log(`${OUT}: ${Math.round(html.length / 1024)} KB`);
+  if (/(src|href)="\/ai-team-guide\//.test(html)) throw new Error('В офлайн-файле осталась внешняя ссылка');
+  const out = join(OUT_DIR, target.file);
+  writeFileSync(out, html);
+  console.log(`${out}: ${Math.round(html.length / 1024)} KB`);
+}

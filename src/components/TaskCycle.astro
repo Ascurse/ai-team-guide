@@ -1,12 +1,32 @@
 ---
-import { CYCLE_FRAMES, CYCLE_NODES, VERDICT_NO, VERDICT_YES } from '../data/cycle.js';
+import * as ruCycle from '../data/cycle.js';
+import * as enCycle from '../data/en/cycle.js';
+
+const { lang } = Astro.props;
+const { CYCLE_FRAMES, CYCLE_NODES, VERDICT_NO, VERDICT_YES } = lang === 'en' ? enCycle : ruCycle;
+const T = {
+  ru: {
+    title: 'Цикл задачи: где он идёт назад',
+    aria: 'Цикл задачи',
+    lead: 'Работа идёт по прямой, только пока проверка не скажет «нет». Тогда она возвращается через отладку к исполнению.',
+    no: ': нет',
+    yes: ': да',
+  },
+  en: {
+    title: 'The task cycle: where it goes back',
+    aria: 'Task cycle',
+    lead: 'Work goes in a straight line only until a check says “no”. Then it goes back through debugging to execution.',
+    no: ': no',
+    yes: ': yes',
+  },
+}[lang];
 
 const nameOf = (id) => CYCLE_NODES.find((node) => node.id === id).name;
-const VERDICT_LABEL = { [VERDICT_NO]: ': нет', [VERDICT_YES]: ': да' };
+const VERDICT_LABEL = { [VERDICT_NO]: T.no, [VERDICT_YES]: T.yes };
 ---
-<section class="fig" id="fig-cycle" aria-label="Цикл задачи">
-<h3>Цикл задачи: где он идёт назад</h3>
-<p class="lead">Работа идёт по прямой, только пока проверка не скажет «нет». Тогда она возвращается через отладку к исполнению.</p>
+<section class="fig" id="fig-cycle" aria-label={T.aria}>
+<h3>{T.title}</h3>
+<p class="lead">{T.lead}</p>
 <div class="cycle-run" id="cy-run" hidden aria-hidden="true" style={`--frames:${CYCLE_FRAMES.length}`}>
 <div class="cycle-pin">
 <div class="cycle-map" id="cy-map">

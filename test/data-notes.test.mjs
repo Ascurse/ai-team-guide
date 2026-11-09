@@ -33,3 +33,10 @@ test('заголовки и код не считаются данными', () =
 test('бенчмарк без знака доллара тоже получает примечание', () => {
   assert.equal(notesIn(noted('<p>Контекст 223K токенов.</p>')), 1);
 });
+
+test('английские бенчмарки и пометки об источнике тоже получают примечание', () => {
+  assert.equal(notesIn(noted('<p>The Benchmark shows a gap.</p>')), 1);
+  assert.equal(notesIn(noted('<p>Failure rate 12% (one source).</p>')), 1);
+  assert.equal(notesIn(noted('<p>Failure rate 12% (measured on Opus).</p>')), 1);
+  assert.equal(notesIn(noted('<p>Plain English text.</p>')), 0);
+});

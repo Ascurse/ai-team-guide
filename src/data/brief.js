@@ -1,3 +1,5 @@
+import { briefPromptFor } from './logic.js';
+
 export const BRIEF_BASE = 'Картинка про переезд офиса.';
 
 // Порядок и текст совпадают с тем, что ушло в генерацию
@@ -45,6 +47,6 @@ export const BRIEF_RESULTS = [
 
 export const briefMask = (on) => BRIEF_PARTS.reduce((mask, part) => mask + (on[part.id] ? part.bit : 0), 0);
 
-export const briefPrompt = (on) => [BRIEF_BASE, ...BRIEF_PARTS.filter((part) => on[part.id]).map((part) => part.text)].join(' ');
+export const briefPrompt = briefPromptFor(BRIEF_BASE, BRIEF_PARTS);
 
 export const briefFile = (mask) => `brief/v${mask}.webp`;

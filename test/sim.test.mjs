@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { simulate, layersAt, compactCurve, spendAt, OUTPUT_KEEP, PRICES, COMPACT_WARN } from '../src/lib/sim.js';
+import { simulate, layersAt, compactCurve, spendAt, message, OUTPUT_KEEP, PRICES, COMPACT_WARN, FRESH_SESSION_WARN, MAX_SCALE } from '../src/lib/sim.js';
 
 const TERRA = PRICES['GPT-6.1 Terra'];
 const sum = (ls) => ls.reduce((a, l) => a + l.size, 0);
@@ -73,4 +73,24 @@ test('в пределах 40 ходов кривая совпадает с га�
   }
   const { steps } = compactCurve(40, 30, price);
   assert.ok(steps >= 6 && steps <= 10, `окупаемость ${steps}`);
+});
+
+const MESSAGE_CASES = [
+  [{ ctx: MAX_SCALE + 1 }, 40, /start a new one/, /Контекст вышел за шкалу/],
+  [{ ctx: 50000, ev: 'mcp' }, 10, /cache was reset/, /кэш сброшен/],
+  [{ ctx: 50000, ev: 'compact' }, 10, /compressed/, /История сжата/],
+  [{ ctx: FRESH_SESSION_WARN }, 40, /Over 250K/, /Больше 250K/],
+  [{ ctx: COMPACT_WARN }, 30, /Past 200K/, /После 200K/],
+  [{ ctx: 31000 }, 1, /Start:/, /^Старт:/],
+  [{ ctx: 60000 }, 5, /All good/, /^Всё в норме/],
+];
+
+test('сообщения симулятора: каждая ветка на обоих языках', () => {
+  for (const [cur, n, en, ru] of MESSAGE_CASES) {
+    const english = message(cur, n, 'en');
+    assert.match(english, en);
+    assert.doesNotMatch(english, /[А-Яа-яЁё]/);
+    assert.match(message(cur, n, 'ru'), ru);
+    assert.equal(message(cur, n), message(cur, n, 'ru'));
+  }
 });

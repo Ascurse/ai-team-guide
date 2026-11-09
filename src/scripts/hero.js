@@ -1,4 +1,5 @@
 import { COMPACT_TO, COMPACT_WARN, MAX_TURNS, PER_TURN, PRICES, fmtK, layersAt, message, money, simulate } from '../lib/sim.js';
+import { LANG, T } from './lang.js';
 
 const $ = (id) => document.getElementById(id);
 const PRICE = PRICES['GPT-6.1 Terra'];
@@ -46,7 +47,7 @@ export async function initHero() {
     $('h-ctx').textContent = fmtK(cur.ctx);
     $('h-cost').textContent = money(cur.cost);
     $('h-total').textContent = money(cur.total);
-    $('h-msg').textContent = message(cur, n);
+    $('h-msg').textContent = message(cur, n, LANG);
     $('h-msg').className = cur.ev || cur.ctx >= COMPACT_WARN ? 'alert' : '';
     $('h-next').disabled = $('h-mcp').disabled = n >= MAX_TURNS;
     $('h-compact').disabled = n >= MAX_TURNS || cur.hist <= COMPACT_TO + PER_TURN;
@@ -55,7 +56,7 @@ export async function initHero() {
   function stop() {
     clearInterval(timer);
     timer = null;
-    $('h-play').textContent = 'Автоход';
+    $('h-play').textContent = T.hero.play;
     $('h-play').setAttribute('aria-pressed', 'false');
   }
 
@@ -84,7 +85,7 @@ export async function initHero() {
   $('h-reset').onclick = () => { stop(); events = {}; turn.value = 1; render(); };
   $('h-play').onclick = () => {
     if (timer) return stop();
-    $('h-play').textContent = 'Стоп';
+    $('h-play').textContent = T.hero.stop;
     $('h-play').setAttribute('aria-pressed', 'true');
     play(MAX_TURNS, PLAY_STEP_MS);
   };

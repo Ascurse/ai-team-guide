@@ -1,4 +1,8 @@
-import { BRIEF_PARTS, BRIEF_RESULTS, briefFile, briefMask } from '../data/brief.js';
+import * as ru from '../data/brief.js';
+import * as en from '../data/en/brief.js';
+import { LANG } from './lang.js';
+
+const { BRIEF_PARTS, BRIEF_RESULTS, briefFile, briefMask } = LANG === 'en' ? en : ru;
 
 export function initBrief() {
   const root = document.getElementById('fig-brief');

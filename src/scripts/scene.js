@@ -1,5 +1,6 @@
 import { AmbientLight, BoxGeometry, Clock, Color, DirectionalLight, EdgesGeometry, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, OrthographicCamera, Scene, SRGBColorSpace, Vector3, WebGLRenderer } from 'three';
 import { COMPACT_WARN, FRESH_SESSION_WARN, MAX_SCALE } from '../lib/sim.js';
+import { T } from './lang.js';
 
 const TOWER = 7;
 const WIDTH = 3.4;
@@ -56,7 +57,7 @@ export function createScene(stage, { spots = [0], names = [], width = WIDTH, mar
   const edges = new EdgesGeometry(unit);
   const edgeMaterial = new LineBasicMaterial({ color: colors.sys });
 
-  const levels = [[COMPACT_WARN, '200K', ': пора /compact'], [FRESH_SESSION_WARN, '250K', ': лучше новая сессия']].map(([size, mark, hint]) => {
+  const levels = [[COMPACT_WARN, '200K', T.scene.compactHint], [FRESH_SESSION_WARN, '250K', T.scene.freshHint]].map(([size, mark, hint]) => {
     const y = heightOf(size);
     const frame = new EdgesGeometry(new BoxGeometry(width + margin * 0.625, 0.001, width + margin * 0.625));
     towers.forEach((tower) => {

@@ -1,15 +1,35 @@
 ---
-import { DATA_NOTE } from '../data/freshness.js';
+import { dataNote } from '../data/freshness.js';
+
+const { lang } = Astro.props;
+const T = {
+  ru: {
+    aria: 'Выбор модели',
+    title: 'Какую модель брать в Codex',
+    lead: 'Выберите задачу и длину сессии. Ниже подсказка, что брать и сколько примерно стоит одна и та же работа на разных моделях.',
+    note: 'Цена считается по API-прайсу и той же учебной модели, что в симуляторе. Effort не учтён: на high токенов больше. По подписке вы упираетесь в лимиты, а не в счёт, но соотношение то же.',
+    size: 'Длина сессии',
+    task: 'Задача',
+  },
+  en: {
+    aria: 'Choosing a model',
+    title: 'Which model to use in Codex',
+    lead: 'Choose a task and a session length. Below is a hint on what to use and roughly what the same work costs on different models.',
+    note: 'The cost uses API prices and the same teaching model as the simulator. Effort is not included: high uses more tokens. On a subscription you hit limits rather than a bill, but the ratio is the same.',
+    size: 'Session length',
+    task: 'Task',
+  },
+}[lang];
 ---
-<section class="fig" id="fig-picker" aria-label="Выбор модели">
-<h3>Какую модель брать в Codex</h3>
-<p class="lead">Выберите задачу и длину сессии. Ниже подсказка, что брать и сколько примерно стоит одна и та же работа на разных моделях.</p>
+<section class="fig" id="fig-picker" aria-label={T.aria}>
+<h3>{T.title}</h3>
+<p class="lead">{T.lead}</p>
 <div class="row">
-<label style="flex:2 1 260px">Задача<br><select id="p-task"></select></label>
-<label style="flex:1 1 150px">Длина сессии<br><select id="p-size"></select></label>
+<label style="flex:2 1 260px">{T.task}<br><select id="p-task"></select></label>
+<label style="flex:1 1 150px">{T.size}<br><select id="p-size"></select></label>
 </div>
 <div class="pick"><strong id="p-model"></strong><div id="p-why"></div><div id="p-claude"></div></div>
 <div class="bars" id="p-bars"></div>
-<p class="note">Цена считается по API-прайсу и той же учебной модели, что в симуляторе. Effort не учтён: на high токенов больше. По подписке вы упираетесь в лимиты, а не в счёт, но соотношение то же.</p>
-<p class="data-note">{DATA_NOTE}</p>
+<p class="note">{T.note}</p>
+<p class="data-note">{dataNote(lang)}</p>
 </section>

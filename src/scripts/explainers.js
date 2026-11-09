@@ -1,7 +1,13 @@
-import { DELEGATION_TASKS, FILE_READS, MAX_PARALLEL, splitReads } from '../data/delegation.js';
-import { LADDER, effortGainTo, ladderBars } from '../data/ladder.js';
+import * as ruDelegation from '../data/delegation.js';
+import * as enDelegation from '../data/en/delegation.js';
+import * as ruLadder from '../data/ladder.js';
+import * as enLadder from '../data/en/ladder.js';
 import { PRICES, compactCurve, money } from '../lib/sim.js';
+import { LANG, T } from './lang.js';
 import { flowDelegation, isCalm, onFirstView } from './motion.js';
+
+const { DELEGATION_TASKS, FILE_READS, MAX_PARALLEL, splitReads } = LANG === 'en' ? enDelegation : ruDelegation;
+const { LADDER, effortGainTo, ladderBars } = LANG === 'en' ? enLadder : ruLadder;
 
 const $ = (id) => document.getElementById(id);
 const MIN_STAIR = 0.02;
@@ -9,16 +15,6 @@ const LATE_COMPACT = 4;
 const PHASE_SHARE = 0.6;
 const CURVE_HEIGHT = 240;
 const CURVE_PAD = { top: 16, right: 8, bottom: 22, left: 8 };
-
-const plural = (n, one, few, many) => {
-  const tens = n % 100;
-  const ones = n % 10;
-  if (tens > 10 && tens < 20) return `${n} ${many}`;
-  if (ones === 1) return `${n} ${one}`;
-  return `${n} ${ones > 1 && ones < 5 ? few : many}`;
-};
-const pluralTurns = (n) => plural(n, 'ход', 'хода', 'ходов');
-const pluralPoints = (n) => plural(n, 'балл', 'балла', 'баллов');
 
 const press = (buttons, active) => buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === active)));
 
@@ -41,7 +37,7 @@ export function initLadder() {
     const [input, output] = PRICES[model.id];
     $('l-name').textContent = model.name;
     $('l-use').textContent = model.use;
-    $('l-facts').textContent = `Скорость: ${model.speed}. Цена за 1M: $${input.toFixed(2)} вход, $${output.toFixed(2)} выход.`;
+    $('l-facts').textContent = T.ladder.facts(model.speed, input, output);
   }
 
   function showEffort(button) {
@@ -50,10 +46,10 @@ export function initLadder() {
     const msg = $('l-effort-msg');
     msg.className = level === 'max' ? 'msg alert' : 'msg';
     msg.textContent = level === 'low'
-      ? 'Точка отсчёта: быстро и дёшево. Годится, когда думать не о чем.'
+      ? T.ladder.effortLow
       : level === 'max'
-        ? `+${pluralPoints(effortGainTo(level))} к low, но последняя ступень даёт только +4 при расходе до 8× токенов.`
-        : `+${pluralPoints(effortGainTo(level))} к low.`;
+        ? T.ladder.effortMax(effortGainTo(level))
+        : T.ladder.effortGain(effortGainTo(level));
   }
 
   metrics.forEach((b) => { b.onclick = () => showMetric(b); });
@@ -71,23 +67,23 @@ export function initDelegation() {
     const count = +button.dataset.count;
     const shares = splitReads(count);
     const mainChips = count ? chips('result', count) : chips('read', FILE_READS);
-    const subs = shares.map((reads) => `<div class="node node-sub"><strong>Субагент</strong><div>Делает объём: Haiku или Sonnet</div><div class="chips">${chips('read', reads)}</div></div>`).join('');
-    $('d-tree').innerHTML = `<div class="node"><strong>Главная сессия</strong><div>Думает и проверяет: Opus</div><div class="chips">${mainChips}</div></div>${count ? `<div class="subs">${subs}</div>` : ''}`;
+    const subs = shares.map((reads) => `<div class="node node-sub"><strong>${T.delegation.subagent}</strong><div>${T.delegation.subagentRole}</div><div class="chips">${chips('read', reads)}</div></div>`).join('');
+    $('d-tree').innerHTML = `<div class="node"><strong>${T.delegation.main}</strong><div>${T.delegation.mainRole}</div><div class="chips">${mainChips}</div></div>${count ? `<div class="subs">${subs}</div>` : ''}`;
     $('d-main').textContent = count ? 0 : FILE_READS;
     $('d-subs').textContent = count ? FILE_READS : 0;
     $('d-results').textContent = count;
     const msg = $('d-msg');
     msg.className = count > MAX_PARALLEL ? 'msg alert' : 'msg';
     msg.textContent = count === 0
-      ? 'Весь шум лежит в главной сессии и читается заново на каждом ходу.'
+      ? T.delegation.noSubagents
       : count > MAX_PARALLEL
-        ? 'Выше моего лимита. Шесть параллельных прогонов vitest и tsc положили мой ноутбук (10 ядер, 16 GB). Каждый субагент проверяет только свой файл, полный прогон один, в главной сессии.'
-        : 'В главную сессию приходят только выводы. Перечитайте результат сами: уведомление о прогрессе ещё не результат.';
+        ? T.delegation.overLimit
+        : T.delegation.withSubagents;
   }
 
   function renderTask() {
     const task = DELEGATION_TASKS[+$('d-task').value];
-    $('d-verdict').textContent = task.yes ? 'Делегировать' : 'Не делегировать';
+    $('d-verdict').textContent = task.yes ? T.delegation.yes : T.delegation.no;
     $('d-why').textContent = task.why;
   }
 
@@ -119,8 +115,8 @@ function drawCurve(svg, length, at, { plain, compacted, breakEven }) {
   svg.innerHTML = `<line class="axis" x1="${CURVE_PAD.left}" x2="${width - CURVE_PAD.right}" y1="${CURVE_HEIGHT - CURVE_PAD.bottom}" y2="${CURVE_HEIGHT - CURVE_PAD.bottom}"/>
 <line class="mark-line" x1="${x(at)}" x2="${x(at)}" y1="${CURVE_PAD.top}" y2="${CURVE_HEIGHT - CURVE_PAD.bottom}"/>
 <text x="${x(at) + shift}" y="${CURVE_PAD.top + 4}" text-anchor="${anchor}">/compact</text>
-<text x="${CURVE_PAD.left}" y="${CURVE_HEIGHT - 6}">ход 1</text>
-<text x="${width - CURVE_PAD.right}" y="${CURVE_HEIGHT - 6}" text-anchor="end">ход ${length}</text>
+<text x="${CURVE_PAD.left}" y="${CURVE_HEIGHT - 6}">${T.curve.axisTurn(1)}</text>
+<text x="${width - CURVE_PAD.right}" y="${CURVE_HEIGHT - 6}" text-anchor="end">${T.curve.axisTurn(length)}</text>
 <path class="plain" d="${line(plain)}"/><path class="comp" d="${line(compacted)}"/>${paid || ''}`;
 }
 
@@ -144,10 +140,10 @@ export function initCurve() {
     const msg = $('c-msg');
     msg.className = curve.breakEven ? 'msg' : 'msg alert';
     msg.textContent = curve.breakEven
-      ? `Окупился через ${pluralTurns(curve.steps)}: дальше каждый ход дешевле.`
+      ? T.curve.paidBack(curve.steps)
       : turns - turn <= LATE_COMPACT
-        ? `До конца всего ${pluralTurns(turns - turn)}, компакт не успел окупиться.`
-        : 'Контекст ещё лёгкий и почти весь из кэша: выжимка стоит дороже, чем сэкономит.';
+        ? T.curve.tooLate(turns - turn)
+        : T.curve.tooEarly;
     drawCurve(svg, turns, turn, curve);
   }
 

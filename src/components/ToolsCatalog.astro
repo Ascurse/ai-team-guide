@@ -1,14 +1,50 @@
 ---
-import {
-  ALL_CATEGORIES_FILTER,
-  ALL_TOOLS_FILTER,
-  TOOL_CATEGORIES,
-  TOOL_FILTERS,
-  TOOLS,
-} from '../data/tools.js';
+import * as ruTools from '../data/tools.js';
+import * as enTools from '../data/en/tools.js';
 
-const CATEGORY_FILTERS = [{ id: ALL_CATEGORIES_FILTER, label: 'Все категории' }, ...TOOL_CATEGORIES];
-const FILTERS = [{ id: ALL_TOOLS_FILTER, label: 'Все форматы' }, ...TOOL_FILTERS];
+const { lang } = Astro.props;
+const { ALL_CATEGORIES_FILTER, ALL_TOOLS_FILTER, TOOL_CATEGORIES, TOOL_FILTERS, TOOLS } = lang === 'en' ? enTools : ruTools;
+const T = {
+  ru: {
+    aria: 'Каталог инструментов',
+    title: 'Двадцать один инструмент по четырём категориям',
+    lead: 'Порядок внутри разделов ничего не значит, это не рейтинг. Фильтруйте каталог по назначению инструмента и по тому, где он работает.',
+    categoryGroup: 'Категория инструмента',
+    whereGroup: 'Где работает инструмент',
+    whereTags: 'Где работает',
+    purpose: 'Зачем нужен.',
+    feature: 'В чём фишка.',
+    pros: 'Сильные стороны',
+    cons: 'Оговорки',
+    when: 'Когда брать.',
+    site: 'Сайт',
+    note: 'Сведения собраны 7 ноября 2026 из документации, журналов выпусков и репозиториев самих продуктов. На одинаковых задачах я их не сравнивал, поэтому «когда брать» это мнение, а не результат теста. «Не подтверждено» значит, что этого нет в изученных материалах, а не что функции нет. Логотипы принадлежат их владельцам.',
+    allCategories: 'Все категории',
+    allFormats: 'Все форматы',
+    docs: 'Документация',
+  },
+  en: {
+    aria: 'Tool catalog',
+    title: 'Twenty-one tools in four categories',
+    lead: 'The order within sections means nothing; this is not a ranking. Filter the catalog by what a tool is for and where it runs.',
+    categoryGroup: 'Tool category',
+    whereGroup: 'Where the tool runs',
+    whereTags: 'Where it runs',
+    purpose: 'What it is for.',
+    feature: 'What stands out.',
+    pros: 'Strengths',
+    cons: 'Caveats',
+    when: 'When to use it.',
+    site: 'Website',
+    note: 'Collected on November 7, 2026 from the products’ own documentation, changelogs, and repositories. I did not compare them on identical tasks, so “when to use it” is an opinion, not a test result. “Not confirmed” means it is not in the materials I studied, not that the feature does not exist. Logos belong to their owners.',
+    allCategories: 'All categories',
+    allFormats: 'All formats',
+    docs: 'Documentation',
+  },
+}[lang];
+
+const CATEGORY_FILTERS = [{ id: ALL_CATEGORIES_FILTER, label: T.allCategories }, ...TOOL_CATEGORIES];
+const FILTERS = [{ id: ALL_TOOLS_FILTER, label: T.allFormats }, ...TOOL_FILTERS];
 const TAG_LABELS = Object.fromEntries(TOOL_FILTERS.map((filter) => [filter.id, filter.label]));
 const GROUPS = TOOL_CATEGORIES.map((category) => ({
   ...category,
@@ -16,11 +52,11 @@ const GROUPS = TOOL_CATEGORIES.map((category) => ({
 }));
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
-<section class="fig" id="fig-tools" aria-label="Каталог инструментов">
-<h3>Двадцать один инструмент по четырём категориям</h3>
-<p class="lead">Порядок внутри разделов ничего не значит, это не рейтинг. Фильтруйте каталог по назначению инструмента и по тому, где он работает.</p>
+<section class="fig" id="fig-tools" aria-label={T.aria}>
+<h3>{T.title}</h3>
+<p class="lead">{T.lead}</p>
 <div class="tool-filters js-only">
-  <div class="row" role="group" aria-label="Категория инструмента">
+  <div class="row" role="group" aria-label={T.categoryGroup}>
     {CATEGORY_FILTERS.map((category) => (
       <button
         class="btn"
@@ -30,7 +66,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       >{category.label}</button>
     ))}
   </div>
-  <div class="row" role="group" aria-label="Где работает инструмент">
+  <div class="row" role="group" aria-label={T.whereGroup}>
     {FILTERS.map((filter) => (
       <button
         class="btn"
@@ -62,22 +98,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             </div>
           </div>
           <p class="tool-summary">{tool.summary}</p>
-          <ul class="tool-tags" aria-label="Где работает">{tool.tags.map((tag) => <li>{TAG_LABELS[tag]}</li>)}</ul>
-          <p class="tool-fact"><strong>Зачем нужен.</strong> {tool.purpose}</p>
-          <p class="tool-fact"><strong>В чём фишка.</strong> {tool.feature}</p>
-          <p class="tool-label">Сильные стороны</p>
+          <ul class="tool-tags" aria-label={T.whereTags}>{tool.tags.map((tag) => <li>{TAG_LABELS[tag]}</li>)}</ul>
+          <p class="tool-fact"><strong>{T.purpose}</strong> {tool.purpose}</p>
+          <p class="tool-fact"><strong>{T.feature}</strong> {tool.feature}</p>
+          <p class="tool-label">{T.pros}</p>
           <ul class="tool-list tool-pros">{tool.pros.map((item) => <li>{item}</li>)}</ul>
-          <p class="tool-label">Оговорки</p>
+          <p class="tool-label">{T.cons}</p>
           <ul class="tool-list tool-cons">{tool.cons.map((item) => <li>{item}</li>)}</ul>
-          <p class="tool-when"><strong>Когда брать.</strong> {tool.when}</p>
+          <p class="tool-when"><strong>{T.when}</strong> {tool.when}</p>
           <p class="tool-links">
-            <a href={tool.url} target="_blank" rel="noopener noreferrer">Сайт</a>
-            <a href={tool.docs} target="_blank" rel="noopener noreferrer">{tool.docsLabel ?? 'Документация'}</a>
+            <a href={tool.url} target="_blank" rel="noopener noreferrer">{T.site}</a>
+            <a href={tool.docs} target="_blank" rel="noopener noreferrer">{tool.docsLabel ?? T.docs}</a>
           </p>
         </li>
       ))}
     </ul>
   </div>
 ))}
-<p class="note">Сведения собраны 7 ноября 2026 из документации, журналов выпусков и репозиториев самих продуктов. На одинаковых задачах я их не сравнивал, поэтому «когда брать» это мнение, а не результат теста. «Не подтверждено» значит, что этого нет в изученных материалах, а не что функции нет. Логотипы принадлежат их владельцам.</p>
+<p class="note">{T.note}</p>
 </section>

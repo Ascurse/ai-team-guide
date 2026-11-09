@@ -84,12 +84,34 @@ export function spendAt(turn, price, { outputsKeep = OUTPUT_KEEP.all, toolsShare
   return { layers, ctx, total };
 }
 
-export function message(cur, n) {
-  if (cur.ctx > MAX_SCALE) return 'Контекст вышел за шкалу. Такая сессия уже не работает: начинайте новую.';
-  if (cur.ev === 'mcp') return 'Набор инструментов изменился, кэш сброшен: весь контекст прочитан по полной цене. Поэтому посреди сессии набор не меняем.';
-  if (cur.ev === 'compact') return 'История сжата до короткой выжимки. Сессия снова лёгкая, но детали из неё пропали: важное заранее записывайте в файлы.';
-  if (cur.ctx >= FRESH_SESSION_WARN) return 'Больше 250K: модель быстро деградирует и путается в собственной истории. Лучше новая сессия.';
-  if (cur.ctx >= COMPACT_WARN) return 'После 200K самое время сделать /compact или начать новую сессию.';
-  if (n === 1) return 'Старт: контекст ещё пуст, но схемы инструментов уже заняли большую его часть. Лишние MCP отключаем.';
-  return 'Всё в норме: старая часть контекста читается из кэша, платите в основном за новое. Качество падает задолго до лимита окна, поэтому одна задача — одна сессия.';
+const MESSAGES = {
+  ru: {
+    offScale: 'Контекст вышел за шкалу. Такая сессия уже не работает: начинайте новую.',
+    mcp: 'Набор инструментов изменился, кэш сброшен: весь контекст прочитан по полной цене. Поэтому посреди сессии набор не меняем.',
+    compact: 'История сжата до короткой выжимки. Сессия снова лёгкая, но детали из неё пропали: важное заранее записывайте в файлы.',
+    fresh: 'Больше 250K: модель быстро деградирует и путается в собственной истории. Лучше новая сессия.',
+    compactWarn: 'После 200K самое время сделать /compact или начать новую сессию.',
+    start: 'Старт: контекст ещё пуст, но схемы инструментов уже заняли большую его часть. Лишние MCP отключаем.',
+    ok: 'Всё в норме: старая часть контекста читается из кэша, платите в основном за новое. Качество падает задолго до лимита окна, поэтому одна задача — одна сессия.',
+  },
+  en: {
+    offScale: 'The context is off the scale. A session like this no longer works: start a new one.',
+    mcp: 'The tool set changed and the cache was reset: the whole context was read at full price. That is why you do not change the tool set mid-session.',
+    compact: 'The history was compressed into a short summary. The session is light again, but the details are gone: write anything important to files beforehand.',
+    fresh: 'Over 250K: the model degrades quickly and gets lost in its own history. Better to start a new session.',
+    compactWarn: 'Past 200K it is time to run /compact or start a new session.',
+    start: 'Start: the context is still empty, but tool schemas already take up most of it. Turn off the MCP servers you do not need.',
+    ok: 'All good: the old part of the context is read from cache, so you pay mostly for what is new. Quality drops long before the window limit, so keep one task per session.',
+  },
+};
+
+export function message(cur, n, lang = 'ru') {
+  const text = MESSAGES[lang];
+  if (cur.ctx > MAX_SCALE) return text.offScale;
+  if (cur.ev === 'mcp') return text.mcp;
+  if (cur.ev === 'compact') return text.compact;
+  if (cur.ctx >= FRESH_SESSION_WARN) return text.fresh;
+  if (cur.ctx >= COMPACT_WARN) return text.compactWarn;
+  if (n === 1) return text.start;
+  return text.ok;
 }

@@ -1,5 +1,5 @@
 const PRICE = /\$\d/;
-const BENCHMARK = /бенчмарк|SWE-bench|Artificial Analysis|BenchLM|\d\s?K\b|\d\s?%[^\n]*\((?:замер|один источник)/;
+const BENCHMARK = /бенчмарк|[Bb]enchmark|SWE-bench|Artificial Analysis|BenchLM|\d\s?K\b|\d\s?%[^\n]*\((?:замер|один источник|measured|one source|single source)/;
 const BLOCK_TAG = /<(\/?)(p|ul|ol|table|blockquote|pre|h[1-6])\b[^>]*>/g;
 
 function topLevelBlocks(html) {

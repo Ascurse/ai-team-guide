@@ -1,9 +1,7 @@
 import { ALL_AUDIENCES_FILTER, ALL_CATEGORIES_FILTER, installCommand } from '../data/pack.js';
+import { T } from './lang.js';
 
-const COPIED_LABEL = 'Скопировано';
-const COPY_FAILED_LABEL = 'Не вышло, выделите текст вручную';
 const LABEL_RESET_MS = 2000;
-const EMPTY_CART_TEXT = 'Отметьте карточки «В мой набор», и здесь появится команда установки только их.';
 
 function pressOnly(buttons, pressed) {
   for (const button of buttons) button.setAttribute('aria-pressed', String(button === pressed));
@@ -13,9 +11,9 @@ async function copyText(button, text) {
   const label = button.textContent;
   try {
     await navigator.clipboard.writeText(text);
-    button.textContent = COPIED_LABEL;
+    button.textContent = T.copy.copied;
   } catch {
-    button.textContent = COPY_FAILED_LABEL;
+    button.textContent = T.copy.failed;
   }
   setTimeout(() => { button.textContent = label; }, LABEL_RESET_MS);
 }
@@ -49,7 +47,7 @@ export function initPack() {
       group.hidden = visible === 0;
     }
     const visibleTotal = cards.filter((card) => !card.hidden).length;
-    count.textContent = visibleTotal ? `Показано ${visibleTotal} из ${cards.length}` : 'Ничего не нашлось, попробуйте другое слово';
+    count.textContent = visibleTotal ? T.pack.shown(visibleTotal, cards.length) : T.pack.empty;
   }
 
   function updateCart() {
@@ -61,7 +59,7 @@ export function initPack() {
     cartCmd.firstElementChild.textContent = command;
     cartCopy.disabled = !command;
     cartReset.disabled = !command;
-    cartStatus.textContent = command ? `В наборе ${ids.length}. Команда для Claude Code:` : EMPTY_CART_TEXT;
+    cartStatus.textContent = command ? T.pack.cart(ids.length) : T.pack.emptyCart;
   }
 
   root.addEventListener('click', (event) => {

@@ -1,5 +1,5 @@
-const COPIED_LABEL = 'Скопировано';
-const COPY_FAILED_LABEL = 'Не вышло, выделите текст вручную';
+import { T } from './lang.js';
+
 const LABEL_RESET_MS = 2000;
 
 export function initSkill() {
@@ -9,9 +9,9 @@ export function initSkill() {
     const label = button.textContent;
     try {
       await navigator.clipboard.writeText(button.dataset.copy);
-      button.textContent = COPIED_LABEL;
+      button.textContent = T.copy.copied;
     } catch {
-      button.textContent = COPY_FAILED_LABEL;
+      button.textContent = T.copy.failed;
     }
     setTimeout(() => { button.textContent = label; }, LABEL_RESET_MS);
   }

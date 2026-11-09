@@ -1,26 +1,64 @@
 ---
-import { DELEGATION_TASKS } from '../data/delegation.js';
+import * as ruDelegation from '../data/delegation.js';
+import * as enDelegation from '../data/en/delegation.js';
+
+const { lang } = Astro.props;
+const { DELEGATION_TASKS } = lang === 'en' ? enDelegation : ruDelegation;
+const T = {
+  ru: {
+    aria: 'Что делегация делает с контекстом',
+    title: 'Дерево делегации: где остаётся шум',
+    lead: '20 чтений файлов либо лежат в главной сессии, либо остаются у субагента, а к вам приходит вывод. Выберите, сколько субагентов работает.',
+    note: 'Лимит в два субагента мой, он появился после реального сбоя. Чтения показаны штуками: размер в токенах зависит от файлов.',
+    treeAria: 'Схема: главная сессия и субагенты',
+    readsMain: 'Чтений в главной сессии',
+    readsSubs: 'Чтений у субагентов',
+    outputs: 'Выводов наверх',
+    worth: 'Стоит ли делегировать',
+    count: 'Субагентов:',
+    replay: 'Повторить',
+    read: 'Чтение файла',
+    result: 'Вывод субагента',
+    task: 'Задача',
+  },
+  en: {
+    aria: 'What delegation does to the context',
+    title: 'Delegation tree: where the noise stays',
+    lead: '20 file reads either sit in the main session or stay with a subagent, and only the output reaches you. Choose how many subagents work.',
+    note: 'The limit of two subagents is mine; it appeared after a real failure. Reads are shown as a count: their size in tokens depends on the files.',
+    treeAria: 'Diagram: the main session and subagents',
+    readsMain: 'Reads in the main session',
+    readsSubs: 'Reads by subagents',
+    outputs: 'Outputs sent up',
+    worth: 'Is it worth delegating',
+    count: 'Subagents:',
+    replay: 'Replay',
+    read: 'File read',
+    result: 'Subagent output',
+    task: 'Task',
+  },
+}[lang];
 ---
-<section class="fig" id="fig-delegation" aria-label="Что делегация делает с контекстом">
-<h3>Дерево делегации: где остаётся шум</h3>
-<p class="lead">20 чтений файлов либо лежат в главной сессии, либо остаются у субагента, а к вам приходит вывод. Выберите, сколько субагентов работает.</p>
+<section class="fig" id="fig-delegation" aria-label={T.aria}>
+<h3>{T.title}</h3>
+<p class="lead">{T.lead}</p>
 <div class="js-only">
 <div class="row" id="d-count">
-<span>Субагентов:</span>
+<span>{T.count}</span>
 {[0, 1, 2, 3, 6].map((n) => <button class="btn" type="button" data-count={n} aria-pressed={String(n === 1)}>{n}</button>)}
-<button class="btn" type="button" id="d-replay">Повторить</button>
+<button class="btn" type="button" id="d-replay">{T.replay}</button>
 </div>
-<div class="tree" id="d-tree" role="img" aria-label="Схема: главная сессия и субагенты"></div>
-<div class="legend"><span><b class="k-read"></b>Чтение файла</span><span><b class="k-result"></b>Вывод субагента</span></div>
+<div class="tree" id="d-tree" role="img" aria-label={T.treeAria}></div>
+<div class="legend"><span><b class="k-read"></b>{T.read}</span><span><b class="k-result"></b>{T.result}</span></div>
 <div class="stats">
-<div class="stat"><div>Чтений в главной сессии</div><strong id="d-main"></strong></div>
-<div class="stat"><div>Чтений у субагентов</div><strong id="d-subs"></strong></div>
-<div class="stat"><div>Выводов наверх</div><strong id="d-results"></strong></div>
+<div class="stat"><div>{T.readsMain}</div><strong id="d-main"></strong></div>
+<div class="stat"><div>{T.readsSubs}</div><strong id="d-subs"></strong></div>
+<div class="stat"><div>{T.outputs}</div><strong id="d-results"></strong></div>
 </div>
 <div class="msg" id="d-msg" aria-live="polite"></div>
-<h3 class="sub">Стоит ли делегировать</h3>
-<label for="d-task">Задача<br><select id="d-task">{DELEGATION_TASKS.map((task, i) => <option value={i}>{task.name}</option>)}</select></label>
+<h3 class="sub">{T.worth}</h3>
+<label for="d-task">{T.task}<br><select id="d-task">{DELEGATION_TASKS.map((task, i) => <option value={i}>{task.name}</option>)}</select></label>
 <div class="pick" aria-live="polite"><strong id="d-verdict"></strong><div id="d-why"></div></div>
 </div>
-<p class="note">Лимит в два субагента мой, он появился после реального сбоя. Чтения показаны штуками: размер в токенах зависит от файлов.</p>
+<p class="note">{T.note}</p>
 </section>

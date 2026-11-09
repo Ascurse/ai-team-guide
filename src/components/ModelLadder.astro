@@ -1,19 +1,48 @@
 ---
-import { DATA_NOTE } from '../data/freshness.js';
-import { LADDER, SESSION_TURNS, ladderBars } from '../data/ladder.js';
+import { dataNote } from '../data/freshness.js';
+import * as ruLadder from '../data/ladder.js';
+import * as enLadder from '../data/en/ladder.js';
 import { PRICES } from '../lib/sim.js';
+import { STRINGS } from '../scripts/strings.js';
+
+const { lang } = Astro.props;
+const { LADDER, SESSION_TURNS, ladderBars } = lang === 'en' ? enLadder : ruLadder;
+const T = {
+  ru: {
+    aria: 'Лестница моделей Codex',
+    title: 'Лестница моделей: за что платите на каждой ступени',
+    lead: 'Ступень выше стоит дороже, но выигрывает не везде. Переключайте мерку и нажимайте на модель.',
+    note: 'Выдумки: один источник, тест на знание фактов, не на код. Индекс Artificial Analysis: один источник, замер на усилии max, на меньшем усилии он ниже. Усилие: один источник, замер на Opus 5.5, у моделей Codex кривая может быть другой. Цена сессии из учебной модели симулятора.',
+    effortStart: 'С low на medium +17 баллов, дальше прирост быстро падает.',
+    effortTitle: 'Вторая ручка: усилие',
+    index: 'Индекс интеллекта',
+    made: 'Выдумывает',
+    sessionPrice: (turns) => `Цена сессии, ${turns} ходов`,
+  },
+  en: {
+    aria: 'The Codex model ladder',
+    title: 'The model ladder: what you pay for at each step',
+    lead: 'A higher step costs more but does not win everywhere. Switch the metric and press a model.',
+    note: 'Fabrication: one source, a test of factual knowledge, not of code. Artificial Analysis index: one source, measured at max effort; it is lower at lower effort. Effort: one source, measured on Opus 5.5; the curve may differ for Codex models. Session cost comes from the simulator’s teaching model.',
+    effortStart: 'From low to medium is +17 points; after that the gain drops quickly.',
+    effortTitle: 'The second dial: effort',
+    index: 'Intelligence index',
+    made: 'Makes things up',
+    sessionPrice: (turns) => `Session cost, ${turns} turns`,
+  },
+}[lang];
 
 const bars = ladderBars('session');
 const first = LADDER[1];
 const [inPrice, outPrice] = PRICES[first.id];
 ---
-<section class="fig" id="fig-ladder" aria-label="Лестница моделей Codex">
-<h3>Лестница моделей: за что платите на каждой ступени</h3>
-<p class="lead">Ступень выше стоит дороже, но выигрывает не везде. Переключайте мерку и нажимайте на модель.</p>
+<section class="fig" id="fig-ladder" aria-label={T.aria}>
+<h3>{T.title}</h3>
+<p class="lead">{T.lead}</p>
 <div class="row js-only">
-<button class="btn" type="button" data-metric="session" aria-pressed="true">Цена сессии, {SESSION_TURNS} ходов</button>
-<button class="btn" type="button" data-metric="made" aria-pressed="false">Выдумывает</button>
-<button class="btn" type="button" data-metric="index" aria-pressed="false">Индекс интеллекта</button>
+<button class="btn" type="button" data-metric="session" aria-pressed="true">{T.sessionPrice(SESSION_TURNS)}</button>
+<button class="btn" type="button" data-metric="made" aria-pressed="false">{T.made}</button>
+<button class="btn" type="button" data-metric="index" aria-pressed="false">{T.index}</button>
 </div>
 <div class="stairs" id="l-stairs">
 {bars.map((bar) => (
@@ -27,16 +56,16 @@ const [inPrice, outPrice] = PRICES[first.id];
 <div class="pick" aria-live="polite">
 <strong id="l-name">{first.name}</strong>
 <div id="l-use">{first.use}</div>
-<div id="l-facts">Скорость: {first.speed}. Цена за 1M: ${inPrice.toFixed(2)} вход, ${outPrice.toFixed(2)} выход.</div>
+<div id="l-facts">{STRINGS[lang].ladder.facts(first.speed, inPrice, outPrice)}</div>
 </div>
-<h3 class="sub">Вторая ручка: усилие</h3>
+<h3 class="sub">{T.effortTitle}</h3>
 <div class="row js-only" id="l-effort">
 <button class="btn" type="button" data-level="low" aria-pressed="false">low</button>
 <button class="btn" type="button" data-level="medium" aria-pressed="true">medium</button>
 <button class="btn" type="button" data-level="high" aria-pressed="false">high</button>
 <button class="btn" type="button" data-level="max" aria-pressed="false">max</button>
 </div>
-<div class="msg" id="l-effort-msg" aria-live="polite">С low на medium +17 баллов, дальше прирост быстро падает.</div>
-<p class="note">Выдумки: один источник, тест на знание фактов, не на код. Индекс Artificial Analysis: один источник, замер на усилии max, на меньшем усилии он ниже. Усилие: один источник, замер на Opus 5.5, у моделей Codex кривая может быть другой. Цена сессии из учебной модели симулятора.</p>
-<p class="data-note">{DATA_NOTE}</p>
+<div class="msg" id="l-effort-msg" aria-live="polite">{T.effortStart}</div>
+<p class="note">{T.note}</p>
+<p class="data-note">{dataNote(lang)}</p>
 </section>

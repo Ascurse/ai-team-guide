@@ -1,22 +1,50 @@
 ---
-import { SKILL_ROUTINES, skillFile, skillPrompt, skillPromptParts } from '../data/skill.js';
+import * as ruSkill from '../data/skill.js';
+import * as enSkill from '../data/en/skill.js';
+
+const { lang } = Astro.props;
+const { SKILL_ROUTINES, skillFile, skillPrompt, skillPromptParts } = lang === 'en' ? enSkill : ruSkill;
+const T = {
+  ru: {
+    aria: 'Из чего состоит скилл',
+    title: 'Посмотрите, что получится',
+    lead: 'Возьмём четыре рутины из первого шага. Выберите одну: появится тот же запрос, только заполненный, и файл, который примерно вернётся. Цветом отмечены его части.',
+    routineGroup: 'Какую рутину взять',
+    prompt: 'Запрос к модели',
+    hint: 'Выделено то, что стоит заменить на своё.',
+    copy: 'Скопировать запрос',
+    returned: 'Что вернётся: SKILL.md',
+    note: 'Файлы в этом блоке написал я сам, чтобы показать устройство скилла. Это образцы, а не ответы модели: она задаст вопросы и соберёт свой вариант, разделы могут называться иначе.',
+  },
+  en: {
+    aria: 'What a skill is made of',
+    title: 'See what you get',
+    lead: 'Take the four routines from the first step. Pick one: you will see the same prompt, filled in, and roughly the file you get back. Its parts are marked in color.',
+    routineGroup: 'Which routine to use',
+    prompt: 'Prompt to the model',
+    hint: 'Highlighted parts are what you should replace with your own.',
+    copy: 'Copy the prompt',
+    returned: 'What you get back: SKILL.md',
+    note: 'I wrote the files in this block myself to show how a skill is built. They are samples, not model answers: the model will ask questions and put together its own version, and the sections may have other names.',
+  },
+}[lang];
 ---
-<section class="fig" id="fig-skill" aria-label="Из чего состоит скилл">
-<h3>Посмотрите, что получится</h3>
-<p class="lead">Возьмём четыре рутины из первого шага. Выберите одну: появится тот же запрос, только заполненный, и файл, который примерно вернётся. Цветом отмечены его части.</p>
-<div class="row" role="group" aria-label="Какую рутину взять">
+<section class="fig" id="fig-skill" aria-label={T.aria}>
+<h3>{T.title}</h3>
+<p class="lead">{T.lead}</p>
+<div class="row" role="group" aria-label={T.routineGroup}>
 {SKILL_ROUTINES.map((routine, i) => <button class="btn" type="button" aria-pressed={String(i === 0)} data-routine={routine.id}>{routine.label}</button>)}
 </div>
 {SKILL_ROUTINES.map((routine, i) => (
 <div class="skill" data-panel={routine.id} hidden={i !== 0}>
   <div class="skill-ask">
-    <p class="brief-label">Запрос к модели</p>
+    <p class="brief-label">{T.prompt}</p>
     <pre class="skill-code">{skillPromptParts(routine).map((part) => part.filled ? <mark>{part.text}</mark> : part.text)}</pre>
-    <p class="skill-hint">Выделено то, что стоит заменить на своё.</p>
-    <button class="btn js-only" type="button" data-copy={skillPrompt(routine)}>Скопировать запрос</button>
+    <p class="skill-hint">{T.hint}</p>
+    <button class="btn js-only" type="button" data-copy={skillPrompt(routine)}>{T.copy}</button>
   </div>
   <div class="skill-file">
-    <p class="brief-label">Что вернётся: SKILL.md</p>
+    <p class="brief-label">{T.returned}</p>
     {skillFile(routine).map((part) => (
     <div class={`skill-part skill-part-${part.id}`}>
       <pre class="skill-code">{part.text}</pre>
@@ -26,5 +54,5 @@ import { SKILL_ROUTINES, skillFile, skillPrompt, skillPromptParts } from '../dat
   </div>
 </div>
 ))}
-<p class="note">Файлы в этом блоке написал я сам, чтобы показать устройство скилла. Это образцы, а не ответы модели: она задаст вопросы и соберёт свой вариант, разделы могут называться иначе.</p>
+<p class="note">{T.note}</p>
 </section>

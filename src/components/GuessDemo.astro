@@ -1,15 +1,46 @@
-<section class="fig" id="fig-guess" aria-label="Как модель угадывает">
-<h3>Почему модель выдумывает уверенно</h3>
-<p class="lead">Модель не достаёт факт из памяти. Она оценивает вероятность следующего слова и выбирает одно из них. Когда факта нет, вероятности размазаны, но ответ звучит так же уверенно.</p>
-<div class="row" role="group" aria-label="Пример">
-<button class="btn" id="g-known" type="button" aria-pressed="true">Факт, который все знают</button>
-<button class="btn" id="g-unknown" type="button" aria-pressed="false">Факт, которого у неё нет</button>
+---
+const { lang } = Astro.props;
+const T = {
+  ru: {
+    aria: 'Как модель угадывает',
+    title: 'Почему модель выдумывает уверенно',
+    lead: 'Модель не достаёт факт из памяти. Она оценивает вероятность следующего слова и выбирает одно из них. Когда факта нет, вероятности размазаны, но ответ звучит так же уверенно.',
+    known: 'Факт, который все знают',
+    unknown: 'Факт, которого у неё нет',
+    again: 'Сгенерировать ещё раз',
+    ratesTitle: 'Как часто модели выдумывают, когда не знают ответа',
+    noteStart: 'Вероятности в примере учебные. Доли выдумок из одного источника: ',
+    noteLink: 'BenchLM по Artificial Analysis',
+    noteEnd: ', тест на знание фактов, не на код.',
+    example: 'Пример',
+  },
+  en: {
+    aria: 'How the model guesses',
+    title: 'Why the model makes things up with confidence',
+    lead: 'The model does not fetch a fact from memory. It estimates the probability of the next word and picks one. When the fact is missing, the probabilities are spread out, but the answer sounds just as confident.',
+    known: 'A fact everyone knows',
+    unknown: 'A fact it does not have',
+    again: 'Generate again',
+    ratesTitle: 'How often models make things up when they do not know the answer',
+    noteStart: 'The probabilities in the example are made up for teaching. The fabrication rates come from one source: ',
+    noteLink: 'BenchLM on Artificial Analysis data',
+    noteEnd: ', a test of factual knowledge, not of code.',
+    example: 'Example',
+  },
+}[lang];
+---
+<section class="fig" id="fig-guess" aria-label={T.aria}>
+<h3>{T.title}</h3>
+<p class="lead">{T.lead}</p>
+<div class="row" role="group" aria-label={T.example}>
+<button class="btn" id="g-known" type="button" aria-pressed="true">{T.known}</button>
+<button class="btn" id="g-unknown" type="button" aria-pressed="false">{T.unknown}</button>
 </div>
 <div class="sentence"><span id="g-text"></span> <em id="g-word">…</em></div>
 <div class="bars" id="g-bars"></div>
-<div class="row"><button class="btn" id="g-go" type="button">Сгенерировать ещё раз</button></div>
+<div class="row"><button class="btn" id="g-go" type="button">{T.again}</button></div>
 <p id="g-msg" aria-live="polite"></p>
-<h3 class="sub">Как часто модели выдумывают, когда не знают ответа</h3>
+<h3 class="sub">{T.ratesTitle}</h3>
 <div class="bars" id="g-rates"></div>
-<p class="note">Вероятности в примере учебные. Доли выдумок из одного источника: <a href="https://benchlm.ai/blog/posts/gpt-6-models-compared">BenchLM по Artificial Analysis</a>, тест на знание фактов, не на код.</p>
+<p class="note">{T.noteStart}<a href="https://benchlm.ai/blog/posts/gpt-6-models-compared">{T.noteLink}</a>{T.noteEnd}</p>
 </section>

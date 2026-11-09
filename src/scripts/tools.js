@@ -1,4 +1,5 @@
 import { ALL_CATEGORIES_FILTER, ALL_TOOLS_FILTER } from '../data/tools.js';
+import { T } from './lang.js';
 
 export function initTools() {
   const root = document.getElementById('fig-tools');
@@ -23,7 +24,7 @@ export function initTools() {
     }
 
     const visibleTotal = cards.filter((card) => !card.hidden).length;
-    count.textContent = `Показано ${visibleTotal} из ${cards.length}`;
+    count.textContent = T.tools.shown(visibleTotal, cards.length);
   }
 
   root.addEventListener('click', (event) => {

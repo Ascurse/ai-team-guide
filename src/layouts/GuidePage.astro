@@ -1,0 +1,157 @@
+---
+import PageToc from '../components/PageToc.astro';
+import { dataNote } from '../data/freshness.js';
+import { langBase, otherLang, pageUrl } from '../lib/pages.mjs';
+import { STRINGS } from '../scripts/strings.js';
+import '../styles/fonts.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/guide.css';
+import '../styles/workshop.css';
+import '../styles/hero.css';
+import '../styles/explainers.css';
+
+const REPO_URL = 'https://github.com/Ascurse/ai-team-guide';
+const LANGS = ['ru', 'en'];
+const LANG_NAMES = { ru: 'Русский', en: 'English' };
+const TEMPLATE_STRINGS = {
+  ru: {
+    siteTitle: 'Как работать с AI',
+    fallbackStart: 'Как устроена сессия с моделью, показывает ',
+    fallbackLink: 'симулятор контекста',
+    fallbackEnd: ' на странице «Для всех».',
+    sceneAria: 'Стопка контекста',
+    sceneTitle: 'Каждый ход модель читает всё заново',
+    stageAria: 'Стопка контекста: растёт с каждым ходом, значения показаны ниже',
+    instructions: 'Инструкции',
+    tools: 'Инструменты',
+    cachedHistory: 'История из кэша',
+    fullPrice: 'По полной цене',
+    context: 'Контекст',
+    turnCost: 'Цена хода',
+    session: 'Вся сессия',
+    turn: 'Ход',
+    of50: 'из 50',
+    next: 'Следующий ход',
+    mcp: 'Подключить MCP',
+    reset: 'Сначала',
+    contents: 'Содержание',
+    pagerAria: 'Соседние страницы',
+    sources: 'Исходники на GitHub',
+  },
+  en: {
+    siteTitle: 'How to Work with AI',
+    fallbackStart: 'To see how a session with a model works, open the ',
+    fallbackLink: 'context simulator',
+    fallbackEnd: ' on the “For everyone” page.',
+    sceneAria: 'Context stack',
+    sceneTitle: 'On every turn the model reads everything again',
+    stageAria: 'Context stack: it grows with every turn, the values are shown below',
+    instructions: 'Instructions',
+    tools: 'Tools',
+    cachedHistory: 'History from cache',
+    fullPrice: 'At full price',
+    context: 'Context',
+    turnCost: 'Cost of the turn',
+    session: 'The whole session',
+    turn: 'Turn',
+    of50: 'of 50',
+    next: 'Next turn',
+    mcp: 'Connect MCP',
+    reset: 'Start over',
+    contents: 'Contents',
+    pagerAria: 'Neighboring pages',
+    sources: 'Source code on GitHub',
+  },
+};
+
+const { lang, current, pages } = Astro.props;
+const T = TEMPLATE_STRINGS[lang];
+const switchTo = otherLang(lang);
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const pagesBase = langBase(base, lang);
+const [home] = pages;
+const isHome = current === home;
+const stripTags = (html) => html.replace(/<[^>]+>/g, '');
+const plainTitle = stripTags(home.title);
+const description = stripTags(home.summary);
+---
+<!doctype html>
+<html lang={lang}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{isHome ? T.siteTitle : `${current.nav} · ${T.siteTitle}`}</title>
+<meta name="description" content={description}>
+<meta property="og:title" content={isHome ? plainTitle : `${current.nav} · ${T.siteTitle}`}>
+<meta property="og:description" content={description}>
+<link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml">
+{LANGS.map((code) => <link rel="alternate" hreflang={code} href={new URL(pageUrl(langBase(base, code), current.slug), Astro.site).href}>)}
+</head>
+<body>
+<div class="progress" aria-hidden="true"><i id="progress"></i></div>
+<div class="lang-bar"><a class="btn lang-switch" lang={switchTo} hreflang={switchTo} href={pageUrl(langBase(base, switchTo), current.slug)}>{LANG_NAMES[switchTo]}</a></div>
+
+{isHome && (
+<header class="hero">
+  <div>
+    <h1 class="top" id={home.anchor} set:html={home.title} />
+    <p class="sum" set:html={home.summary} />
+    <div class="doors">{pages.slice(1).map((page) => <a href={pageUrl(pagesBase, page.slug)}>{page.nav}</a>)}</div>
+  </div>
+  <p class="scene-fallback" id="scene-fallback">{T.fallbackStart}<a href={`${pageUrl(pagesBase, 'everyone')}#fig-context`}>{T.fallbackLink}</a>{T.fallbackEnd}</p>
+  <section class="scene" id="scene" aria-label={T.sceneAria} hidden>
+    <h2>{T.sceneTitle}</h2>
+    <div class="stage" id="stage" role="img" aria-label={T.stageAria}>
+      <div class="key" aria-hidden="true">
+        <div><b style="background:var(--color-ink)"></b>{T.instructions}</div>
+        <div><b style="background:var(--signal-blue)"></b>{T.tools}</div>
+        <div><b style="background:var(--signal-yellow)"></b>{T.cachedHistory}</div>
+        <div><b style="background:var(--signal-red)"></b>{T.fullPrice}</div>
+      </div>
+    </div>
+    <div class="cells">
+      <div class="cell"><span>{T.context}</span><strong id="h-ctx"></strong></div>
+      <div class="cell"><span>{T.turnCost}</span><strong id="h-cost"></strong></div>
+      <div class="cell"><span>{T.session}</span><strong id="h-total"></strong></div>
+    </div>
+    <p class="data-note">{dataNote(lang)}</p>
+    <div id="h-msg" aria-live="polite"></div>
+    <label for="h-turn">{T.turn} <strong id="h-n">1</strong> {T.of50}</label>
+    <input id="h-turn" type="range" min="1" max="50" value="1">
+    <div class="row">
+      <button class="btn primary" id="h-next" type="button">{T.next}</button>
+      <button class="btn" id="h-play" type="button" aria-pressed="false">{STRINGS[lang].hero.play}</button>
+      <button class="btn" id="h-mcp" type="button">{T.mcp}</button>
+      <button class="btn" id="h-compact" type="button">/compact</button>
+      <button class="btn" id="h-reset" type="button">{T.reset}</button>
+    </div>
+  </section>
+</header>
+)}
+
+<div class="layout">
+<nav class="toc" aria-label={T.contents}>
+  <PageToc pages={pages} current={current} base={pagesBase} />
+</nav>
+<main>
+  <div class="mobile-bar">
+    <details class="mobile-toc"><summary>{T.contents}</summary><div class="toc-list">
+      <PageToc pages={pages} current={current} base={pagesBase} />
+    </div></details>
+  </div>
+  <article class="page">
+    {current.parts.map(({ html, Widget }) => (<Fragment set:html={html} /><Widget lang={lang} />))}
+    <Fragment set:html={current.tail} />
+    <nav class="pager" aria-label={T.pagerAria}>
+      {current.prev && <a class="prev" rel="prev" href={pageUrl(pagesBase, current.prev.slug)}>← {current.prev.nav}</a>}
+      {current.next && <a class="next" rel="next" href={pageUrl(pagesBase, current.next.slug)}>{current.next.nav} →</a>}
+    </nav>
+  </article>
+</main>
+</div>
+
+<footer class="site"><a href={REPO_URL}>{T.sources}</a></footer>
+<script src="../scripts/main.js"></script>
+</body>
+</html>

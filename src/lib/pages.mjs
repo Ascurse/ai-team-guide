@@ -1,18 +1,27 @@
 export const PAGES = [
-  { slug: '', nav: 'Главная' },
-  { slug: 'everyone', nav: 'Для всех' },
-  { slug: 'dev', nav: 'Для разработки' },
-  { slug: 'advanced', nav: 'Продвинутое' },
-  { slug: 'models', nav: 'Модели и цены' },
-  { slug: 'tools', nav: 'Инструменты' },
-  { slug: 'download', nav: 'Скачать' },
+  { slug: '', nav: { ru: 'Главная', en: 'Home' } },
+  { slug: 'everyone', nav: { ru: 'Для всех', en: 'For everyone' } },
+  { slug: 'dev', nav: { ru: 'Для разработки', en: 'For developers' } },
+  { slug: 'advanced', nav: { ru: 'Продвинутое', en: 'Advanced' } },
+  { slug: 'models', nav: { ru: 'Модели и цены', en: 'Models and pricing' } },
+  { slug: 'tools', nav: { ru: 'Инструменты', en: 'Tools' } },
+  { slug: 'download', nav: { ru: 'Скачать', en: 'Download' } },
 ];
+
+const EN_PATH = 'en/';
 
 const MAX_REFERENCE_DEPTH = 3;
 const INTRO = /^\s*<h1[^>]*>(.*?)<\/h1>\s*<p>(.*?)<\/p>/s;
-const REFERENCE = /<(code|pre|a|h[1-6])\b[^>]*>[\s\S]*?<\/\1>|«([^«»<]+)»/g;
+const SKIPPED_TAGS = String.raw`<(code|pre|a|h[1-6])\b[^>]*>[\s\S]*?<\/\1>`;
+// В английском markdown пишут прямые кавычки, до этого места они доходят типографскими после smartypants
+const REFERENCE = {
+  ru: new RegExp(`${SKIPPED_TAGS}|«([^«»<]+)»`, 'g'),
+  en: new RegExp(`${SKIPPED_TAGS}|“([^“”<]+)”`, 'g'),
+};
 
 export const pageUrl = (base, slug) => (slug ? `${base}${slug}/` : base);
+export const langBase = (base, lang) => (lang === 'en' ? `${base}${EN_PATH}` : base);
+export const otherLang = (lang) => (lang === 'en' ? 'ru' : 'en');
 
 function groupHeadings(headings) {
   const groups = [];
@@ -23,21 +32,21 @@ function groupHeadings(headings) {
   return groups;
 }
 
-function buildReferenceIndex(groups) {
+function buildReferenceIndex(groups, pages) {
   const index = new Map();
   groups.forEach((group, i) => {
     for (const heading of group.items.filter((item) => item.depth <= MAX_REFERENCE_DEPTH)) {
       // В тексте раздел называют коротко: «Обвязка» вместо «Обвязка (harness)»
       const name = heading.text.split(/[:(]/)[0].trim();
-      index.set(name, index.has(name) ? null : { slug: PAGES[i].slug, id: heading.slug, section: true });
+      index.set(name, index.has(name) ? null : { slug: pages[i].slug, id: heading.slug, section: true });
     }
   });
-  groups.forEach((group, i) => index.set(PAGES[i].nav, { slug: PAGES[i].slug, id: group.slug }));
+  groups.forEach((group, i) => index.set(pages[i].nav, { slug: pages[i].slug, id: group.slug }));
   return index;
 }
 
-export function linkReferences(html, index, currentSlug, base) {
-  return html.replace(REFERENCE, (match, skippedTag, name) => {
+export function linkReferences(html, index, currentSlug, base, lang = 'ru') {
+  return html.replace(REFERENCE[lang], (match, skippedTag, name) => {
     const target = skippedTag ? null : index.get(name);
     if (!target) return match;
     const pageHref = pageUrl(base, target.slug);
@@ -56,13 +65,14 @@ function placeWidgets(bodies, widgets) {
   return placements.map((cuts) => cuts.sort((a, b) => a.at - b.at));
 }
 
-export function buildPages({ html, headings, base, widgets }) {
+export function buildPages({ html, headings, base, widgets, lang = 'ru' }) {
+  const pages = PAGES.map((page) => ({ slug: page.slug, nav: page.nav[lang] }));
   const chunks = html.split(/(?=<h1[\s>])/).filter((chunk) => chunk.trim());
-  if (chunks.length !== PAGES.length) throw new Error(`Ожидалось ${PAGES.length} страниц, в гайде ${chunks.length}`);
+  if (chunks.length !== pages.length) throw new Error(`Ожидалось ${pages.length} страниц, в гайде ${chunks.length}`);
 
   const groups = groupHeadings(headings);
-  const index = buildReferenceIndex(groups);
-  const linked = chunks.map((chunk, i) => linkReferences(chunk, index, PAGES[i].slug, base));
+  const index = buildReferenceIndex(groups, pages);
+  const linked = chunks.map((chunk, i) => linkReferences(chunk, index, pages[i].slug, base, lang));
   const intro = linked[0].match(INTRO);
   if (!intro) throw new Error('Гайд должен начинаться с заголовка и абзаца');
 
@@ -72,15 +82,15 @@ export function buildPages({ html, headings, base, widgets }) {
   return bodies.map((body, i) => {
     const cuts = placements[i];
     return {
-      ...PAGES[i],
+      ...pages[i],
       title: i ? groups[i].text : intro[1],
       summary: i ? undefined : intro[2],
       anchor: groups[i].slug,
       subs: groups[i].items.filter((item) => item.depth === 2),
       parts: cuts.map((cut, n) => ({ html: body.slice(n ? cuts[n - 1].at : 0, cut.at), Widget: cut.Widget })),
       tail: body.slice(cuts.at(-1)?.at ?? 0),
-      prev: PAGES[i - 1],
-      next: PAGES[i + 1],
+      prev: pages[i - 1],
+      next: pages[i + 1],
     };
   });
 }

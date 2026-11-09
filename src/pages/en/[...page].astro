@@ -1,0 +1,9 @@
+---
+import GuidePage from '../../layouts/GuidePage.astro';
+import { guidePaths } from '../../lib/guide-paths.js';
+
+export function getStaticPaths() {
+  return guidePaths('en');
+}
+---
+<GuidePage lang="en" {...Astro.props} />
