@@ -1,4 +1,5 @@
 import {PRICES,START,COMPACT_TO,PER_TURN,MAX_SCALE,simulate,fmtK,money,message} from '../lib/sim.js';
+import {publishState,readState,browserStorage} from '../lib/context-link.js';
 import {LANG,T as TEXT} from './lang.js';
 
 var $=function(i){return document.getElementById(i)};
@@ -24,13 +25,14 @@ export function initSim(){
     $('s-msg').className=(cur.ev||cur.ctx>=200000)?'alert':'';
     $('s-mcp').disabled=$('s-compact').disabled=n>=50;
     if(cur.hist<=COMPACT_TO+PER_TURN)$('s-compact').disabled=true;
+    publishState({turn:n,model:sel.value,events:events},{storage:browserStorage(),target:document});
     $('s-spark').innerHTML=all.map(function(a,i){return '<i class="'+(a.miss?'miss ':'')+(i>=n?'off':'')+'" style="height:'+Math.max(2,a.cost/max*100)+'%"></i>'}).join('');
   }
   function act(type){var n=+turn.value+1;if(n>50)return;Object.keys(events).forEach(function(k){if(+k>=n)delete events[k]});events[n]=type;turn.value=n;render()}
   turn.oninput=render;sel.onchange=render;
   $('s-mcp').onclick=function(){act('mcp')};$('s-compact').onclick=function(){act('compact')};
   $('s-reset').onclick=function(){events={};turn.value=1;render()};
-  turn.value=22;render();
+  var saved=readState(browserStorage());events=saved.events;sel.value=saved.model;turn.value=saved.turn;render();
 }
 
 export function initGuess(){

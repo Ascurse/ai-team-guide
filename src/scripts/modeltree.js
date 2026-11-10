@@ -1,6 +1,8 @@
 import { animate } from 'motion';
 import * as ruTree from '../data/modeltree.js';
 import * as enTree from '../data/en/modeltree.js';
+import { MAX_SCALE, fmtK, money } from '../lib/sim.js';
+import { browserStorage, contextAt, readState, subscribeState } from '../lib/context-link.js';
 import { LANG, T } from './lang.js';
 import { isCalm } from './motion.js';
 
@@ -66,7 +68,26 @@ export function initModelTree() {
   new ResizeObserver(() => animate(dot, dotTarget(TREE_STEPS[current].nodes[1]), { duration: 0 })).observe(map);
 
   initLanes(map);
+  initContextCounter();
   show(0);
+}
+
+function initContextCounter() {
+  const box = $('mt-ctx');
+  const fill = $('mt-ctx-fill');
+
+  function draw(state) {
+    const { turn, model, ctx, cost, level } = contextAt(state);
+    $('mt-ctx-size').textContent = fmtK(ctx);
+    $('mt-ctx-meta').textContent = S.ctxMeta(turn, model);
+    $('mt-ctx-cost').textContent = S.ctxCost(money(cost));
+    $('mt-ctx-msg').textContent = S.ctxLevel[level];
+    fill.style.width = `${Math.min(100, (ctx / MAX_SCALE) * 100)}%`;
+    box.dataset.level = level;
+  }
+
+  draw(readState(browserStorage()));
+  subscribeState(draw, { target: document, win: window });
 }
 
 function initLanes(map) {
