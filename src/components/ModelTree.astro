@@ -11,39 +11,43 @@ const T = {
   ru: {
     aria: 'Дерево моделей Claude Code',
     title: 'Дерево моделей: кто что делает',
-    lead: 'Главная сессия ведёт задачу и раздаёт работу. Нажимайте «Дальше»: шаги показывают одну задачу от запроса до проверки. В рамке Orca и Herdr переключайте, что пошло не так.',
-    note: 'Практика без замеров. Модели и порядок строк записаны на 10.11.2026 и меняются вместе с настройкой. Длинный контекст и безопасность в полосах имеют отдельные строки, здесь они опущены.',
-    lanesTitle: 'Что пошло не так в полосе',
+    lead: 'Главная сессия ведёт задачу и раздаёт работу. Нажимайте «Дальше»: шаги показывают одну задачу от запроса до проверки.',
+    note: 'Практика без замеров. Модели записаны на 10.11.2026 и меняются вместе с настройкой.',
+    lanesAria: 'Полосы моделей в Orca и Herdr',
+    lanesTitle: 'Полосы Orca и Herdr: что, если пошло не так',
+    lanesLead: 'Полоса задаёт порядок моделей для воркера. Выберите полосу и нажимайте, что случилось: квота переводит на следующую строку, подъём уровня ведёт в следующую полосу.',
+    lanesNote: 'Порядок строк записан на 10.11.2026. Длинный контекст и безопасность имеют в полосах отдельные строки, здесь они опущены.',
     stepsTitle: 'Шаги',
     treeAria: 'Схема: кто кому передаёт работу',
     ctxTitle: 'Контекст главной сессии',
-    ctxHint: 'Цифры берутся из симулятора контекста. Двигайте там ползунок, и счётчик здесь изменится, даже в другой вкладке.',
-    ctxLink: 'Открыть симулятор',
+    ctxLink: 'Цифры из симулятора контекста',
   },
   en: {
     aria: 'The Claude Code model tree',
     title: 'The model tree: who does what',
-    lead: 'The main session runs the task and hands out work. Press Next: the steps follow one task from request to check. In the Orca and Herdr frame, switch what went wrong.',
-    note: 'Practice with no measurements. The models and row order are recorded as of 10 Nov 2026 and change with my setup. Long context and security have their own rows in the lanes; they are left out here.',
-    lanesTitle: 'What went wrong in a lane',
+    lead: 'The main session runs the task and hands out work. Press Next: the steps follow one task from request to check.',
+    note: 'Practice with no measurements. The models are recorded as of 10 Nov 2026 and change with my setup.',
+    lanesAria: 'Model lanes in Orca and Herdr',
+    lanesTitle: 'Orca and Herdr lanes: what if something goes wrong',
+    lanesLead: 'A lane sets the order of models for a worker. Pick a lane and press what happened: a quota moves to the next row, going up a level leads to the next lane.',
+    lanesNote: 'The row order is recorded as of 10 Nov 2026. Long context and security have their own rows in the lanes; they are left out here.',
     stepsTitle: 'Steps',
     treeAria: 'Diagram: who hands work to whom',
     ctxTitle: 'Main session context',
-    ctxHint: 'The numbers come from the context simulator. Move its slider and the counter here changes, even in another tab.',
-    ctxLink: 'Open the simulator',
+    ctxLink: 'Numbers from the context simulator',
   },
 }[lang];
 
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const simulatorHref = `${pageUrl(langBase(base, lang), 'everyone')}#fig-context`;
 const byTier = (tier) => TREE_NODES.filter((node) => node.tier === tier);
-const orca = TREE_NODES.find((node) => node.id === 'orca');
 ---
 <section class="fig" id="fig-modeltree" aria-label={T.aria}>
 <h3>{T.title}</h3>
 <p class="lead">{T.lead}</p>
+<div class="mt-stage">
 <div class="mt" id="mt-map" role="group" aria-label={T.treeAria}>
-{[0, 1, 2].map((tier) => (
+{[0, 1, 2, 3].map((tier) => (
 <div class={`mt-tier mt-tier-${tier}`}>
 {byTier(tier).map((node) => (
 <div class={`mt-node mt-${node.kind}`} data-node={node.id}>
@@ -54,10 +58,36 @@ const orca = TREE_NODES.find((node) => node.id === 'orca');
 ))}
 </div>
 ))}
-<div class="mt-node mt-vendor-frame" data-node={orca.id}>
-<strong>{orca.label}: {orca.model}</strong>
-<span class="mt-role">{orca.role}</span>
-<div class="mt-lanes">
+<i class="mt-dot" id="mt-dot" hidden></i>
+</div>
+<div class="mt-panel js-only">
+<div class="row">
+<button class="btn" type="button" id="mt-prev">{S.prev}</button>
+<button class="btn" type="button" id="mt-next">{S.next}</button>
+<button class="btn" type="button" id="mt-play">{S.play}</button>
+<span class="mt-count" id="mt-count"></span>
+</div>
+<p class="mt-text" id="mt-text" aria-live="polite"></p>
+<p class="mt-who" id="mt-who"></p>
+<div class="mt-ctx" id="mt-ctx" data-level="ok">
+<div class="mt-ctx-nums"><span>{T.ctxTitle}</span><b id="mt-ctx-size"></b><span id="mt-ctx-meta"></span><span id="mt-ctx-cost"></span></div>
+<div class="mt-ctx-bar" aria-hidden="true"><i id="mt-ctx-fill"></i></div>
+<p class="mt-ctx-msg"><span id="mt-ctx-msg" aria-live="polite"></span> <a href={simulatorHref}>{T.ctxLink}</a></p>
+</div>
+</div>
+</div>
+<h3 class="sub mt-steps-title">{T.stepsTitle}</h3>
+<ol class="mt-steps" id="mt-steps">
+{TREE_STEPS.map((step) => <li>{step.text}</li>)}
+</ol>
+<p class="note">{T.note}</p>
+</section>
+<section class="fig" id="fig-lanes" aria-label={T.lanesAria}>
+<h3>{T.lanesTitle}</h3>
+<p class="lead">{T.lanesLead}</p>
+<div class="row js-only" id="mt-start"><span>{S.start}</span>{TREE_LANES.map((lane, i) => <button class="btn" type="button" data-start={i} aria-pressed={String(i === 0)}>{lane.id}</button>)}</div>
+<div class="mt-lanes-stage">
+<div class="mt-lanes" id="mt-lanes">
 {TREE_LANES.map((lane, laneIndex) => (
 <div class="mt-lane" data-lane={laneIndex}>
 <b>{lane.id}</b>
@@ -70,41 +100,19 @@ const orca = TREE_NODES.find((node) => node.id === 'orca');
 </div>
 ))}
 </div>
-</div>
-<i class="mt-dot" id="mt-dot" hidden></i>
-</div>
-<div class="js-only">
-<div class="row">
-<button class="btn" type="button" id="mt-prev">{S.prev}</button>
-<button class="btn" type="button" id="mt-next">{S.next}</button>
-<button class="btn" type="button" id="mt-play">{S.play}</button>
-<span class="mt-count" id="mt-count"></span>
-</div>
-<p class="mt-text" id="mt-text" aria-live="polite"></p>
-<div class="mt-ctx" id="mt-ctx" data-level="ok">
-<h3 class="sub">{T.ctxTitle}</h3>
-<div class="mt-ctx-nums"><b id="mt-ctx-size"></b><span id="mt-ctx-meta"></span><span id="mt-ctx-cost"></span></div>
-<div class="mt-ctx-bar" aria-hidden="true"><i id="mt-ctx-fill"></i></div>
-<p class="mt-ctx-msg" id="mt-ctx-msg" aria-live="polite"></p>
-<p class="mt-ctx-hint">{T.ctxHint} <a href={simulatorHref}>{T.ctxLink}</a></p>
-</div>
-<h3 class="sub">{T.lanesTitle}</h3>
-<div class="row" id="mt-start"><span>{S.start}</span>{TREE_LANES.map((lane, i) => <button class="btn" type="button" data-start={i} aria-pressed={String(i === 0)}>{lane.id}</button>)}</div>
-<div class="row" id="mt-events">
+<div class="mt-lane-side js-only">
+<div class="mt-lane-buttons" id="mt-events">
 <button class="btn" type="button" data-event="quota">{S.quota}</button>
 <button class="btn" type="button" data-event="retry">{S.retry}</button>
 <button class="btn" type="button" data-event="escalate">{S.escalate}</button>
 <button class="btn" type="button" id="mt-reset">{S.reset}</button>
 </div>
-<div class="row" id="mt-confirm" hidden>
+<div class="msg" id="mt-msg" aria-live="polite"></div>
+<div class="mt-lane-buttons" id="mt-confirm" hidden>
 <button class="btn" type="button" id="mt-yes">{S.yes}</button>
 <button class="btn" type="button" id="mt-no">{S.no}</button>
 </div>
-<div class="msg" id="mt-msg" aria-live="polite"></div>
 </div>
-<h3 class="sub mt-steps-title">{T.stepsTitle}</h3>
-<ol class="mt-steps" id="mt-steps">
-{TREE_STEPS.map((step) => <li>{step.text}</li>)}
-</ol>
-<p class="note">{T.note}</p>
+</div>
+<p class="note">{T.lanesNote}</p>
 </section>

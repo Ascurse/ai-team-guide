@@ -6,7 +6,7 @@ import { browserStorage, contextAt, readState, subscribeState } from '../lib/con
 import { LANG, T } from './lang.js';
 import { isCalm } from './motion.js';
 
-const { TREE_LANES, TREE_STEPS, moveOn } = LANG === 'en' ? enTree : ruTree;
+const { TREE_LANES, TREE_NODES, TREE_STEPS, moveOn } = LANG === 'en' ? enTree : ruTree;
 const S = T.modelTree;
 const $ = (id) => document.getElementById(id);
 const DOT_SIZE = 14;
@@ -23,6 +23,7 @@ export function initModelTree() {
   let timer = null;
 
   figure.classList.add('is-live');
+  $('fig-lanes').classList.add('is-live');
   dot.hidden = false;
   play.hidden = isCalm();
 
@@ -39,6 +40,7 @@ export function initModelTree() {
     [from, to].forEach((id) => nodes[id].classList.add('is-on'));
     $('mt-count').textContent = S.step(index + 1, TREE_STEPS.length);
     $('mt-text').textContent = TREE_STEPS[index].text;
+    $('mt-who').textContent = whoIs(to);
     $('mt-prev').disabled = index === 0;
     $('mt-next').disabled = index === TREE_STEPS.length - 1;
     animate(dot, dotTarget(from), { duration: 0 });
@@ -67,9 +69,14 @@ export function initModelTree() {
   };
   new ResizeObserver(() => animate(dot, dotTarget(TREE_STEPS[current].nodes[1]), { duration: 0 })).observe(map);
 
-  initLanes(map);
+  initLanes();
   initContextCounter();
   show(0);
+}
+
+function whoIs(id) {
+  const node = TREE_NODES.find((item) => item.id === id);
+  return `${[node.label, node.model].filter(Boolean).join(' · ')}: ${node.role}`;
 }
 
 function initContextCounter() {
@@ -90,10 +97,11 @@ function initContextCounter() {
   subscribeState(draw, { target: document, win: window });
 }
 
-function initLanes(map) {
+function initLanes() {
+  const lanes = [...$('mt-lanes').querySelectorAll('[data-lane]')];
   const starts = [...document.querySelectorAll('[data-start]')];
   const eventButtons = [...document.querySelectorAll('[data-event]')];
-  const rowEls = TREE_LANES.map((_, lane) => [...map.querySelectorAll(`[data-lane="${lane}"] [data-row]`)]);
+  const rowEls = lanes.map((lane) => [...lane.querySelectorAll('[data-row]')]);
   const message = $('mt-msg');
   let position = { lane: 0, row: 0 };
   let pending = null;
@@ -101,6 +109,8 @@ function initLanes(map) {
 
   function draw(text) {
     rowEls.forEach((rows, lane) => rows.forEach((el, row) => el.classList.toggle('is-here', lane === position.lane && row === position.row)));
+    lanes.forEach((el, lane) => el.classList.toggle('is-open', lane === position.lane));
+    starts.forEach((b, lane) => b.setAttribute('aria-pressed', String(lane === position.lane)));
     $('mt-confirm').hidden = !pending;
     eventButtons.forEach((b) => { b.disabled = Boolean(pending); });
     message.textContent = text;
@@ -110,11 +120,6 @@ function initLanes(map) {
     position = { lane, row: 0 };
     pending = null;
     draw(S.begin(modelAt(position)));
-  }
-
-  function choose(start) {
-    starts.forEach((b) => b.setAttribute('aria-pressed', String(b === start)));
-    begin(+start.dataset.start);
   }
 
   function commit({ next, event, from }) {
@@ -139,7 +144,7 @@ function initLanes(map) {
   });
   $('mt-yes').onclick = () => commit(pending);
   $('mt-no').onclick = () => { pending = null; draw(S.declined(modelAt(position))); };
-  $('mt-reset').onclick = () => choose(starts[0]);
-  starts.forEach((button) => { button.onclick = () => choose(button); });
+  $('mt-reset').onclick = () => begin(0);
+  starts.forEach((button) => { button.onclick = () => begin(+button.dataset.start); });
   begin(0);
 }
