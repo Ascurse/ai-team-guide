@@ -6,6 +6,7 @@ import { initPack } from './pack.js';
 import { initHero } from './hero.js';
 import { initCurve, initDelegation, initLadder } from './explainers.js';
 import { initSpend } from './spend.js';
+import { initModelTree } from './modeltree.js';
 import { initCycle } from './motion.js';
 
 // На странице только её виджеты, а init без своего корня падает на первом обращении к DOM
@@ -20,6 +21,7 @@ const WIDGET_INITS = [
   ['fig-ladder', initLadder],
   ['fig-cycle', initCycle],
   ['fig-delegation', initDelegation],
+  ['fig-modeltree', initModelTree],
   ['fig-curve', initCurve],
   ['fig-spend', initSpend],
   ['scene', initHero],

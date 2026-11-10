@@ -386,8 +386,8 @@ My working example: a pre-check of the research queue, 6 parallel agents, 499 so
 
 This is how I have it set up in Claude Code. It is practice with no measurements, except for the parallelism limit: that one appeared after a real failure.
 
-1. **The main session thinks, subagents do the volume.** Opus plans, makes decisions, and reviews; implementation and mechanical work go down a level.
-2. **The lane picks the model.** There are four: small (Haiku), medium (Sonnet), high and escalate (Opus). `jev lane classify` assesses the task and names the lane. I go higher only if the lower lane has failed several times.
+1. **The main session runs the task, each other level covers its own part.** Sonnet 5.5 runs the task, hands out work, and writes code. Opus 5.5 acts as an advisor: a second opinion before a non-trivial plan and when the session is stuck. Decisions about interface, architecture, and disputed logic go to the `decider` subagent on Fable 5.2: it returns a decision, at least three rejected options, and acceptance criteria, and writes no code. Haiku 5.5 does the volume through `search` (a map of the area), `grep` (call sites), and `audit` (a check of the committed diff). Fable is not the advisor because an advisor cannot be limited to one kind of decision, and Fable is expensive.
+2. **Jev settles the forks; a role or a lane picks the model.** For `search`, `grep`, `audit`, and `decider` the role fixes the model. For Orca and Herdr workers, `jev lane classify` names one of four lanes: small, medium, high, escalate. Inside a lane the rows go in order: a refusal, a quota, or a limit moves to the next one, and the same model sits at two vendors in a row. I go higher only if the lower lane has failed several times, and I turn Fable on in the escalate lane only after an explicit yes.
 3. **I delegate when the gain exceeds the overhead.** A subagent studies the context from scratch, and then I read its report. Work that takes a couple of tool calls, and checking my own work, I keep for myself.
 4. **No more than two subagents at a time.** Six parallel runs of vitest and tsc brought down my laptop (10 cores, 16 GB). A subagent checks only its own file; the full run happens once in the main session, when everyone has finished.
 5. **A progress notification is not a result yet.** I wait for the final answer and reread the files myself, otherwise two agents will start writing to the same file.
@@ -409,6 +409,8 @@ I assemble a team of Claude, Gemini, DeepSeek, and Grok as a pipeline of files. 
 | Verification | Tests with a seeded bug | OK or FAILED |
 | Review | Fresh session, then one strong external vendor | Findings |
 | Decision | Human | Merge or rejection |
+
+Inside Orca and Herdr the lanes set the order of models, and most models have a spare row at another vendor for when the first one runs out of quota (see “My delegation rules”).
 
 I call other vendors' models from Bash through OpenCode. The `opencode-go` subscription gives DeepSeek, Gemini, GLM, Grok, and Kimi with one key (verified November 6, 2026):
 

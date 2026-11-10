@@ -1,0 +1,94 @@
+---
+import * as ruTree from '../data/modeltree.js';
+import * as enTree from '../data/en/modeltree.js';
+import { STRINGS } from '../scripts/strings.js';
+
+const { lang } = Astro.props;
+const { TREE_LANES, TREE_NODES, TREE_STEPS } = lang === 'en' ? enTree : ruTree;
+const S = STRINGS[lang].modelTree;
+const T = {
+  ru: {
+    aria: 'Дерево моделей Claude Code',
+    title: 'Дерево моделей: кто что делает',
+    lead: 'Главная сессия ведёт задачу и раздаёт работу. Нажимайте «Дальше»: шаги показывают одну задачу от запроса до проверки. В рамке Orca и Herdr переключайте, что пошло не так.',
+    note: 'Практика без замеров. Модели и порядок строк записаны на 10.11.2026 и меняются вместе с настройкой. Длинный контекст и безопасность в полосах имеют отдельные строки, здесь они опущены.',
+    lanesTitle: 'Что пошло не так в полосе',
+    stepsTitle: 'Шаги',
+    treeAria: 'Схема: кто кому передаёт работу',
+  },
+  en: {
+    aria: 'The Claude Code model tree',
+    title: 'The model tree: who does what',
+    lead: 'The main session runs the task and hands out work. Press Next: the steps follow one task from request to check. In the Orca and Herdr frame, switch what went wrong.',
+    note: 'Practice with no measurements. The models and row order are recorded as of 10 Nov 2026 and change with my setup. Long context and security have their own rows in the lanes; they are left out here.',
+    lanesTitle: 'What went wrong in a lane',
+    stepsTitle: 'Steps',
+    treeAria: 'Diagram: who hands work to whom',
+  },
+}[lang];
+
+const byTier = (tier) => TREE_NODES.filter((node) => node.tier === tier);
+const orca = TREE_NODES.find((node) => node.id === 'orca');
+---
+<section class="fig" id="fig-modeltree" aria-label={T.aria}>
+<h3>{T.title}</h3>
+<p class="lead">{T.lead}</p>
+<div class="mt" id="mt-map" role="group" aria-label={T.treeAria}>
+{[0, 1, 2].map((tier) => (
+<div class={`mt-tier mt-tier-${tier}`}>
+{byTier(tier).map((node) => (
+<div class={`mt-node mt-${node.kind}`} data-node={node.id}>
+<strong>{node.label}</strong>
+{node.model && <span class="mt-model">{node.model}</span>}
+<span class="mt-role">{node.role}</span>
+</div>
+))}
+</div>
+))}
+<div class="mt-node mt-vendor-frame" data-node={orca.id}>
+<strong>{orca.label}: {orca.model}</strong>
+<span class="mt-role">{orca.role}</span>
+<div class="mt-lanes">
+{TREE_LANES.map((lane, laneIndex) => (
+<div class="mt-lane" data-lane={laneIndex}>
+<b>{lane.id}</b>
+<span class="mt-lane-note">{lane.note}</span>
+<ol>
+{lane.rows.map((row, rowIndex) => (
+<li class={`mt-row mt-row-${row.vendor === 'claude' ? 'claude' : 'other'}`} data-row={rowIndex}><span class="mt-vendor">{row.vendor}</span> {row.model}</li>
+))}
+</ol>
+</div>
+))}
+</div>
+</div>
+<i class="mt-dot" id="mt-dot" hidden></i>
+</div>
+<div class="js-only">
+<div class="row">
+<button class="btn" type="button" id="mt-prev">{S.prev}</button>
+<button class="btn" type="button" id="mt-next">{S.next}</button>
+<button class="btn" type="button" id="mt-play">{S.play}</button>
+<span class="mt-count" id="mt-count"></span>
+</div>
+<p class="mt-text" id="mt-text" aria-live="polite"></p>
+<h3 class="sub">{T.lanesTitle}</h3>
+<div class="row" id="mt-start"><span>{S.start}</span>{TREE_LANES.map((lane, i) => <button class="btn" type="button" data-start={i} aria-pressed={String(i === 0)}>{lane.id}</button>)}</div>
+<div class="row" id="mt-events">
+<button class="btn" type="button" data-event="quota">{S.quota}</button>
+<button class="btn" type="button" data-event="retry">{S.retry}</button>
+<button class="btn" type="button" data-event="escalate">{S.escalate}</button>
+<button class="btn" type="button" id="mt-reset">{S.reset}</button>
+</div>
+<div class="row" id="mt-confirm" hidden>
+<button class="btn" type="button" id="mt-yes">{S.yes}</button>
+<button class="btn" type="button" id="mt-no">{S.no}</button>
+</div>
+<div class="msg" id="mt-msg" aria-live="polite"></div>
+</div>
+<h3 class="sub mt-steps-title">{T.stepsTitle}</h3>
+<ol class="mt-steps" id="mt-steps">
+{TREE_STEPS.map((step) => <li>{step.text}</li>)}
+</ol>
+<p class="note">{T.note}</p>
+</section>

@@ -6,6 +6,7 @@ import DelegationTree from '../components/DelegationTree.astro';
 import GuessDemo from '../components/GuessDemo.astro';
 import ModelLadder from '../components/ModelLadder.astro';
 import ModelPicker from '../components/ModelPicker.astro';
+import ModelTree from '../components/ModelTree.astro';
 import SessionCurve from '../components/SessionCurve.astro';
 import SkillBuilder from '../components/SkillBuilder.astro';
 import ToolsCatalog from '../components/ToolsCatalog.astro';
@@ -27,6 +28,7 @@ const widgetAnchors = () => [
   { Widget: SkillBuilder, before: { ru: /<p>Где это делается/g, en: /<p>Where this is done/g } },
   { Widget: TaskCycle, before: { ru: /<p><strong>Постановка\.<\/strong>/g, en: /<p><strong>Task setup\.<\/strong>/g } },
   { Widget: DelegationTree, before: { ru: /<h3[^>]*>Как это устроено в Codex<\/h3>/g, en: /<h3[^>]*>How it works in Codex<\/h3>/g } },
+  { Widget: ModelTree, before: { ru: /<h3[^>]*>Мои правила делегации<\/h3>/g, en: /<h3[^>]*>My delegation rules<\/h3>/g } },
   { Widget: SpendMap, before: { ru: /<p>Что режет расход/g, en: /<p>What cuts spending/g } },
   { Widget: SessionCurve, before: { ru: /<p>Что не сработало или вредит/g, en: /<p>What failed or hurts/g } },
   { Widget: ToolsCatalog, before: { ru: /<h2[^>]*>Мой стек/g, en: /<h2[^>]*>My stack/g } },

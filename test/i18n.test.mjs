@@ -12,6 +12,7 @@ const TEXT_FIELDS = {
   cycle: ['name', 'text'],
   delegation: ['name', 'why'],
   ladder: ['use', 'speed'],
+  modeltree: ['label', 'role', 'text', 'note'],
   skill: ['SKILL_PROMPT_TEMPLATE', 'label', 'inGuide', 'task', 'sample', 'description', 'steps', 'limits', 'note'],
   pack: ['label', 'description', 'note', 'summary', 'trigger'],
   tools: ['label', 'description', 'vendor', 'summary', 'purpose', 'feature', 'pros', 'cons', 'when', 'docsLabel'],
